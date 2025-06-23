@@ -17,41 +17,7 @@ permissions:
 jobs:
   test-all-if-reqs-changed:
     if: |
-      contains(github.event.pull_request.changed_files, 'requirements-test.txt') ||
-      contains(github.event.pull_request.changed_files, 'environment.yml')
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Required to diff against origin/main
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.13"
-      
-      - name: Cache pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/pip
-            ~/.local/lib/python3.13/site-packages
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-test.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements-test.txt
-
-      - name: Run all tests
-        run: pytest
-
-  test-modified-notebooks:
-    if: |
-      !contains(github.event.pull_request.changed_files, 'requirements-test.txt') &&
-      !contains(github.event.pull_request.changed_files, 'environment.yml')
+      contains(github.event.pull_request.changed_files, 'requirements.txt')
     runs-on: ubuntu-latest
 
     steps:
@@ -59,25 +25,36 @@ jobs:
         with:
           fetch-depth: 0  # Required for git diff to work
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
-      
-      # - name: Cache pip wheel downloads
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: ~/.cache/pip
-      #     key: ${{ runner.os }}-pip-cache-${{ hashFiles('requirements-test.txt') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-pip-cache-
-      
+          python-version: '3.13'
+          cache: 'pip' # caching pip dependencies
+      - run: pip install -r requirements.txt
+
       - name: Install dependencies
         run: |
-          pip install --prefer-binary --upgrade -r requirements-test.txt
+          pip install -r requirements.txt
 
-      # - name: Check cache after install
-      #   run: du -sh ~/.cache/pip
+      - name: Run all tests
+        run: pytest
+
+  test-modified-notebooks:
+    if: |
+      !contains(github.event.pull_request.changed_files, 'requirements.txt')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for git diff to work
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip' # caching pip dependencies
+      - run: pip install -r requirements.txt
+    
+      - run: pip cache dir
 
       - name: Detect changed notebooks
         id: changed

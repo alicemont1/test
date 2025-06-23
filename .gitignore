@@ -1,0 +1,6 @@
+.venv
+*.grib
+*.nc
+**/__pycache__/
+*.vscode
+.gitattributes
