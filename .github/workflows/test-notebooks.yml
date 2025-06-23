@@ -64,8 +64,6 @@ jobs:
 
       - name: Run notebook tests
         if: env.NOTEBOOKS != ''
-        env:
-          PYTHONWARNINGS: ignore:Downloading:.*:UserWarning
         run: |
           pytest -s -v tests/test_notebooks.py
         
