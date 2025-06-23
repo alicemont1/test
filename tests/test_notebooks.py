@@ -103,7 +103,7 @@ def compare_images(result, image_checks_initial, image_checks_final):
         if result.nb_final.cells[cell_idx].outputs[output_idx_final].get("name") == "stderr":
             del result.nb_final.cells[cell_idx].outputs[output_idx_final]
         
-        # Handle case where base64 is split in a list
+        # Handle case where base64 is split in a lis
         png1 = "".join(png1) if isinstance(png1, list) else png1
         png2 = "".join(png2) if isinstance(png2, list) else png2
 
