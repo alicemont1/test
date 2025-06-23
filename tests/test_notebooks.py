@@ -47,6 +47,7 @@ BASE_IGNORES = (
     '/cells/*/execution_count',
     '/cells/*/outputs/*/execution_count',
     '/cells/*/outputs/*/text',
+    "/cells/*/outputs/*/data/image/png",
 )
 
 # Map tags to ignore paths
