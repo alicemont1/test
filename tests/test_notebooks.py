@@ -10,6 +10,7 @@ from pytest_notebook.nb_regression import NBRegressionFixture
 from pytest_notebook.diffing import filter_diff, diff_to_string
 
 
+
 NOTEBOOK_PATHS = [
     # # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb', #
     # 'climate-dt/climate-dt-earthkit-area-example.ipynb',
