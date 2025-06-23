@@ -59,26 +59,11 @@ jobs:
         with:
           fetch-depth: 0  # Required for git diff to work
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
-      
-      - name: Cache pip downloads
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-test.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-        
-      
-      - name: Install dependencies
-        run: |
-          pip install --prefer-binary --upgrade -r requirements-test.txt
-
-      # - name: Check cache after install
-      #   run: du -sh ~/.cache/pip
+          python-version: '3.13'
+          cache: 'pip' # caching pip dependencies
+      - run: pip install -r requirements-test.txt
 
       - name: Detect changed notebooks
         id: changed
@@ -88,6 +73,8 @@ jobs:
 
       - name: Run notebook tests
         if: env.NOTEBOOKS != ''
+        env:
+          PYTHONWARNINGS: ignore::cartopy.io.DownloadWarning
         run: |
           pytest -s -v tests/test_notebooks.py
         
