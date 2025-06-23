@@ -1,0 +1,95 @@
+name: Python Notebook Testing
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**.ipynb'
+      - 'requirements-test.txt'
+      - 'environment.yml'
+      - 'tests/**'
+      - '.github/workflows/**'
+
+permissions:
+  contents: read
+
+jobs:
+  test-all-if-reqs-changed:
+    if: |
+      contains(github.event.pull_request.changed_files, 'requirements-test.txt') ||
+      contains(github.event.pull_request.changed_files, 'environment.yml')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required to diff against origin/main
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.local/lib/python3.13/site-packages
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-test.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-test.txt
+
+      - name: Run all tests
+        run: pytest
+
+  test-modified-notebooks:
+    if: |
+      !contains(github.event.pull_request.changed_files, 'requirements-test.txt') &&
+      !contains(github.event.pull_request.changed_files, 'environment.yml')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for git diff to work
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+      
+      # - name: Cache pip wheel downloads
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ~/.cache/pip
+      #     key: ${{ runner.os }}-pip-cache-${{ hashFiles('requirements-test.txt') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-pip-cache-
+      
+      - name: Install dependencies
+        run: |
+          pip install --prefer-binary --upgrade -r requirements-test.txt
+
+      # - name: Check cache after install
+      #   run: du -sh ~/.cache/pip
+
+      - name: Detect changed notebooks
+        id: changed
+        run: |
+          notebooks=$(git diff --name-only origin/main...HEAD | grep ".ipynb" | xargs)
+          echo "NOTEBOOKS=$notebooks" >> $GITHUB_ENV
+
+      - name: Run notebook tests
+        if: env.NOTEBOOKS != ''
+        run: |
+          pytest -s -v tests/test_notebooks.py
+        
+      - name: Debug with tmate if test fails
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
