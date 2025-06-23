@@ -45,9 +45,7 @@ NOTEBOOK_PATHS = [
 BASE_IGNORES = (
     '/metadata/language_info/',
     '/cells/*/execution_count',
-    '/cells/*/outputs/*/execution_count',
-    '/cells/*/outputs/*/text',
-    "/cells/*/outputs/*/data/image/png",
+    '/cells/*/outputs/*/execution_count'
 )
 
 # Map tags to ignore paths
@@ -101,8 +99,11 @@ def compare_images(result, image_checks_initial, image_checks_final):
 
         png1 = result.nb_initial.cells[cell_idx].outputs[output_idx_initial].data["image/png"] #necessary so that other tags are ignored
         png2 = result.nb_final.cells[cell_idx].outputs[output_idx_final].data["image/png"]
+
+        if result.nb_final.cells[cell_idx].outputs[output_idx_final].get("name") == "stderr":
+            del result.nb_final.cells[cell_idx].outputs[output_idx_final]
         
-        # Handle case where base64 is split in a list
+        # Handle case where base64 is split in a lis
         png1 = "".join(png1) if isinstance(png1, list) else png1
         png2 = "".join(png2) if isinstance(png2, list) else png2
 
