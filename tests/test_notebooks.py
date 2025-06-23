@@ -46,7 +46,6 @@ BASE_IGNORES = (
     '/metadata/language_info/',
     '/cells/*/execution_count',
     '/cells/*/outputs/*/execution_count',
-    "/cells/*/outputs/*/text",
 )
 
 # Map tags to ignore paths
@@ -112,10 +111,15 @@ def compare_images(result, image_checks_initial, image_checks_final):
 
 # @pytest.mark.parametrize("nb_file", [os.getenv("PYTEST_NB_FILE")])
 # NOTEBOOK_PATHS = os.environ.get("NOTEBOOKS", "").split()
+import warnings
 
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
 def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     nb = nbformat.read(nb_file, as_version=4)
+
+    warnings.filterwarnings("ignore", message=".*Downloading the Natural Earth.*", category=UserWarning)
+    warnings.filterwarnings("ignore", message=".*ShapelyDeprecationWarning.*", category=UserWarning)
+
 
     ignore_paths, image_checks = analyze_tags(nb)
     # Set working directory to the notebook's parent directory
