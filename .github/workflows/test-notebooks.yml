@@ -56,6 +56,16 @@ jobs:
     
       - run: pip cache dir
 
+      - name: Pre-cache Cartopy shapefiles
+        run: |
+          python -c "
+          import cartopy
+          import cartopy.feature as cfeature
+          _ = cfeature.COASTLINE.geometries()
+          _ = cfeature.BORDERS.geometries()
+          _ = cfeature.LAND.geometries()
+          "
+
       - name: Detect changed notebooks
         id: changed
         run: |
