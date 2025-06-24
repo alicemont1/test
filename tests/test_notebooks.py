@@ -99,9 +99,6 @@ def compare_images(result, image_checks_initial, image_checks_final):
 
         png1 = result.nb_initial.cells[cell_idx].outputs[output_idx_initial].data["image/png"] #necessary so that other tags are ignored
         png2 = result.nb_final.cells[cell_idx].outputs[output_idx_final].data["image/png"]
-
-        if len(result.nb_final.cells[10].outputs)>1:
-            del result.nb_final.cells[10].outputs[1]
         
         # Handle case where base64 is split in a lis
         png1 = "".join(png1) if isinstance(png1, list) else png1
@@ -130,13 +127,12 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
 
     _, image_checks_initial = analyze_tags(result.nb_initial)
 
-    # import pdb;pdb.set_trace()
-
     if result.diff_filtered:
         if image_checks:
             filtered_diff = compare_images(result, image_checks_initial, image_checks_final)
             if filtered_diff:
                 diff_str = diff_to_string(result.nb_final, filtered_diff, use_git=False, use_diff=True)
+                # import pdb;pdb.set_trace()
                 pytest.fail(diff_str)
         else:
             pytest.fail(result.diff_string)
