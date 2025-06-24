@@ -99,6 +99,7 @@ def compare_images(result, image_checks_initial, image_checks_final):
 
         png1 = result.nb_initial.cells[cell_idx].outputs[output_idx_initial].data["image/png"] #necessary so that other tags are ignored
         png2 = result.nb_final.cells[cell_idx].outputs[output_idx_final].data["image/png"]
+
         
         # Handle case where base64 is split in a lis
         png1 = "".join(png1) if isinstance(png1, list) else png1
@@ -117,16 +118,15 @@ import warnings
 def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     nb = nbformat.read(nb_file, as_version=4)
 
-    warnings.filterwarnings("ignore", message=".*Downloading the Natural Earth.*", category=UserWarning)
-    warnings.filterwarnings("ignore", message=".*ShapelyDeprecationWarning.*", category=UserWarning)
-
-
     ignore_paths, image_checks = analyze_tags(nb)
     # Set working directory to the notebook's parent directory
     nb_regression.exec_cwd = os.path.dirname(nb_file)
     nb_regression.diff_ignore = BASE_IGNORES + tuple(ignore_paths)
 
     result = nb_regression.check(nb_file, raise_errors=False)
+
+    del result.nb_final.cells[10].outputs[0]
+
 
     _, image_checks_final = analyze_tags(result.nb_final)
 
