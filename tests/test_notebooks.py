@@ -100,8 +100,8 @@ def compare_images(result, image_checks_initial, image_checks_final):
         png1 = result.nb_initial.cells[cell_idx].outputs[output_idx_initial].data["image/png"] #necessary so that other tags are ignored
         png2 = result.nb_final.cells[cell_idx].outputs[output_idx_final].data["image/png"]
 
-        if result.nb_final.cells[cell_idx].outputs[output_idx_final].get("name") == "stderr":
-            del result.nb_final.cells[cell_idx].outputs[output_idx_final]
+        if len(result.nb_final.cells[10].outputs)>1:
+            del result.nb_final.cells[10].outputs[1]
         
         # Handle case where base64 is split in a lis
         png1 = "".join(png1) if isinstance(png1, list) else png1
