@@ -45,14 +45,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Required for git diff to work
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-          cache: 'pip' # caching pip dependencies
-      - run: pip install -r requirements.txt
+          cache: 'pip'
+          cache-dependency-path: 'requirements-test.txt'
+      - run: pip install -r requirements-test.txt
     
       - run: pip cache dir
 
