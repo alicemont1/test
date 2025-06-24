@@ -101,7 +101,7 @@ def compare_images(result, image_checks_initial, image_checks_final):
         png2 = result.nb_final.cells[cell_idx].outputs[output_idx_final].data["image/png"]
 
         
-        # Handle case where base64 is split in a lis
+        # Handle case where base64 is split in a list
         png1 = "".join(png1) if isinstance(png1, list) else png1
         png2 = "".join(png2) if isinstance(png2, list) else png2
 
@@ -112,7 +112,32 @@ def compare_images(result, image_checks_initial, image_checks_final):
 
 # @pytest.mark.parametrize("nb_file", [os.getenv("PYTEST_NB_FILE")])
 # NOTEBOOK_PATHS = os.environ.get("NOTEBOOKS", "").split()
-import warnings
+def find_matching_image_outputs(nb_initial, nb_final):
+    """
+    Find matching cell indices where both initial and final notebooks have image/png outputs.
+
+    Returns:
+        List of tuples (cell_idx, output_idx_initial, output_idx_final)
+        where the output in initial and final notebooks both contain 'image/png'.
+        Output indices are matched independently (not assumed equal).
+    """
+    matches = []
+
+    # Iterate over cells, matching by index
+    for cell_idx in range(min(len(nb_initial.cells), len(nb_final.cells))):
+        outputs_init = nb_initial.cells[cell_idx].get("outputs", [])
+        outputs_final = nb_final.cells[cell_idx].get("outputs", [])
+
+        # Find all outputs with 'image/png' in initial and final separately
+        png_indices_init = [i for i, out in enumerate(outputs_init) if "image/png" in out.get("data", {})]
+        png_indices_final = [i for i, out in enumerate(outputs_final) if "image/png" in out.get("data", {})]
+
+        # Naive pairing: pair outputs in order found (you can improve pairing logic here if needed)
+        for oidx_init, oidx_final in zip(png_indices_init, png_indices_final):
+            matches.append((cell_idx, oidx_init, oidx_final))
+
+    return matches
+
 
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
 def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
@@ -125,19 +150,26 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
 
     result = nb_regression.check(nb_file, raise_errors=False)
 
-    del result.nb_final.cells[10].outputs[0]
-
-
-    _, image_checks_final = analyze_tags(result.nb_final)
-
-    _, image_checks_initial = analyze_tags(result.nb_initial)
+    image_output_matches = find_matching_image_outputs(result.nb_initial, result.nb_final)
 
     if result.diff_filtered:
-        if image_checks:
-            filtered_diff = compare_images(result, image_checks_initial, image_checks_final)
+        if image_output_matches:
+            remove_paths = []
+            for cell_idx, output_idx_init, output_idx_final in image_output_matches:
+                png1 = result.nb_initial.cells[cell_idx].outputs[output_idx_init].data["image/png"]
+                png2 = result.nb_final.cells[cell_idx].outputs[output_idx_final].data["image/png"]
+
+                if isinstance(png1, list):
+                    png1 = "".join(png1)
+                if isinstance(png2, list):
+                    png2 = "".join(png2)
+
+                if perceptual_hash(png1) == perceptual_hash(png2):
+                    remove_paths.append(f"/cells/{cell_idx}/outputs/{output_idx_final}/data/image/png")
+
+            filtered_diff = filter_diff(result.diff_filtered, remove_paths=remove_paths)
             if filtered_diff:
                 diff_str = diff_to_string(result.nb_final, filtered_diff, use_git=False, use_diff=True)
-                # import pdb;pdb.set_trace()
                 pytest.fail(diff_str)
         else:
             pytest.fail(result.diff_string)
