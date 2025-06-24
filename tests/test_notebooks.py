@@ -12,7 +12,7 @@ from pytest_notebook.diffing import filter_diff, diff_to_string
 
 
 NOTEBOOK_PATHS = [
-    "climate-dt/hell.ipynb"
+    # "climate-dt/hell.ipynb"
     # # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb', #
     # 'climate-dt/climate-dt-earthkit-area-example.ipynb',
     # # 'climate-dt/climate-dt-earthkit-example-domain.ipynb',
@@ -24,7 +24,7 @@ NOTEBOOK_PATHS = [
     # # 'climate-dt/climate-dt-earthkit-fe-trajectory.ipynb',
     # # 'climate-dt/climate-dt-earthkit-fe-verticalprofile.ipynb',
     # # 'climate-dt/climate-dt-earthkit-grid-example.ipynb',
-    # 'climate-dt/climate-dt-earthkit-healpix-interpolate.ipynb',
+    'climate-dt/climate-dt-earthkit-healpix-interpolate.ipynb',
     # # 'climate-dt/climate-dt-healpix-data.ipynb',
     # # 'climate-dt/climate-dt-healpix-ocean-example.ipynb',
 
