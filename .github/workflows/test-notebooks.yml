@@ -40,13 +40,13 @@ jobs:
           _ = cfeature.BORDERS.geometries()
           _ = cfeature.LAND.geometries()
           "
-      - name: Pre-cache Cartopy shapefiles
-        run: |
-          python -c "
-          import cartopy.feature as cfeature
-          list(cfeature.COASTLINE.geometries())
-          list(cfeature.BORDERS.geometries())
-          "
+      # - name: Pre-cache Cartopy shapefiles
+      #   run: |
+      #     python -c "
+      #     import cartopy.feature as cfeature
+      #     list(cfeature.COASTLINE.geometries())
+      #     list(cfeature.BORDERS.geometries())
+      #     "
       
       - name: Cache Cartopy shapefiles
         uses: actions/cache@v4
