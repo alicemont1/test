@@ -12,8 +12,9 @@ from pytest_notebook.diffing import filter_diff, diff_to_string
 
 
 NOTEBOOK_PATHS = [
-    # # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb', #
-    # 'climate-dt/climate-dt-earthkit-area-example.ipynb',
+    # "climate-dt/hell.ipynb"
+    'climate-dt/climate-dt-earthkit-aoi-example.ipynb', #
+    'climate-dt/climate-dt-earthkit-area-example.ipynb',
     # # 'climate-dt/climate-dt-earthkit-example-domain.ipynb',
     # # 'climate-dt/climate-dt-earthkit-example.ipynb',
     # # 'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb',
@@ -23,7 +24,7 @@ NOTEBOOK_PATHS = [
     # # 'climate-dt/climate-dt-earthkit-fe-trajectory.ipynb',
     # # 'climate-dt/climate-dt-earthkit-fe-verticalprofile.ipynb',
     # # 'climate-dt/climate-dt-earthkit-grid-example.ipynb',
-    'climate-dt/climate-dt-earthkit-healpix-interpolate.ipynb',
+    # 'climate-dt/climate-dt-earthkit-healpix-interpolate.ipynb',
     # # 'climate-dt/climate-dt-healpix-data.ipynb',
     # # 'climate-dt/climate-dt-healpix-ocean-example.ipynb',
 
@@ -83,7 +84,6 @@ def analyze_tags(nb):
         # If any "check-image" tag is present, add all output indexes
         if TAG_IMAGE_CHECKS.intersection(tags):
             for output_idx, _ in enumerate(cell.get("outputs", [])):
-                # import pdb; pdb.set_trace()
                 if cell.outputs[output_idx].get("data", {}).get("image/png"):
                     image_checks.append((idx, output_idx))
 
@@ -100,15 +100,14 @@ def compare_images(result, image_checks_initial, image_checks_final):
         png1 = result.nb_initial.cells[cell_idx].outputs[output_idx_initial].data["image/png"] #necessary so that other tags are ignored
         png2 = result.nb_final.cells[cell_idx].outputs[output_idx_final].data["image/png"]
 
-        if result.nb_final.cells[cell_idx].outputs[output_idx_final].get("name") == "stderr":
-            del result.nb_final.cells[cell_idx].outputs[output_idx_final]
         
-        # Handle case where base64 is split in a lis
+        # Handle case where base64 is split in a list
         png1 = "".join(png1) if isinstance(png1, list) else png1
         png2 = "".join(png2) if isinstance(png2, list) else png2
 
         if perceptual_hash(png1) == perceptual_hash(png2):
             remove_paths.append(f"/cells/{cell_idx}/outputs/{output_idx_final}/data/image/png")
+            remove_paths.append(f"/cells/{cell_idx}/outputs/{output_idx_initial}/data/image/png")
 
     return filter_diff(result.diff_filtered, remove_paths=remove_paths)
 
@@ -129,8 +128,6 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     _, image_checks_final = analyze_tags(result.nb_final)
 
     _, image_checks_initial = analyze_tags(result.nb_initial)
-
-    # import pdb;pdb.set_trace()
 
     if result.diff_filtered:
         if image_checks:

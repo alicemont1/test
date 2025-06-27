@@ -23,38 +23,80 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required for git diff to work
-
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-          cache: 'pip' # caching pip dependencies
-      - run: pip install -r requirements.txt
+          cache: 'pip'
+          cache-dependency-path: 'requirements-test.txt'
+      - run: pip install -r requirements-test.txt
+    
+      - run: pip cache dir
 
-      - name: Install dependencies
+      - name: Pre-cache Cartopy shapefiles
         run: |
-          pip install -r requirements.txt
+          python -c "
+          import cartopy
+          import cartopy.feature as cfeature
+          _ = cfeature.COASTLINE.geometries()
+          _ = cfeature.BORDERS.geometries()
+          _ = cfeature.LAND.geometries()
+          "
+      # - name: Pre-cache Cartopy shapefiles
+      #   run: |
+      #     python -c "
+      #     import cartopy.feature as cfeature
+      #     list(cfeature.COASTLINE.geometries())
+      #     list(cfeature.BORDERS.geometries())
+      #     "
+      
+      - name: Cache Cartopy shapefiles
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/cartopy
+          key: cartopy-cache-v1
 
       - name: Run all tests
         run: pytest
 
   test-modified-notebooks:
     if: |
-      !contains(github.event.pull_request.changed_files, 'requirements.txt')
+      !contains(github.event.pull_request.changed_files, 'requirements-test.txt')
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Required for git diff to work
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-          cache: 'pip' # caching pip dependencies
-      - run: pip install -r requirements.txt
+          cache: 'pip'
+          cache-dependency-path: 'requirements-test.txt'
+      - run: pip install -r requirements-test.txt
     
       - run: pip cache dir
+
+      - name: Pre-cache Cartopy shapefiles
+        run: |
+          python -c "
+          import cartopy
+          import cartopy.feature as cfeature
+          _ = cfeature.COASTLINE.geometries()
+          _ = cfeature.BORDERS.geometries()
+          _ = cfeature.LAND.geometries()
+          "
+      - name: Pre-cache Cartopy shapefiles
+        run: |
+          python -c "
+          import cartopy.feature as cfeature
+          list(cfeature.COASTLINE.geometries())
+          list(cfeature.BORDERS.geometries())
+          "
+      
+      - name: Cache Cartopy shapefiles
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/cartopy
+          key: cartopy-cache-v1
 
       - name: Detect changed notebooks
         id: changed
