@@ -57,7 +57,8 @@ jobs:
         run: pytest
 
   test-modified-notebooks:
-    if: !contains(github.event.pull_request.changed_files, 'requirements-test.txt')
+    if: |
+      !contains(github.event.pull_request.changed_files, 'requirements-test.txt')
     runs-on: ubuntu-latest
 
     steps:
