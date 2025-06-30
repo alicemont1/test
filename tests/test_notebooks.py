@@ -114,28 +114,11 @@ def compare_images(result, image_checks_initial, image_checks_final):
 
 # @pytest.mark.parametrize("nb_file", [os.getenv("PYTEST_NB_FILE")])
 # NOTEBOOK_PATHS = os.environ.get("NOTEBOOKS", "").split()
-def normalize_empty_stderr(nb):
-    """Remove 'stderr' outputs that are empty or only whitespace."""
-    for cell in nb.cells:
-        if "outputs" not in cell:
-            continue
-        new_outputs = []
-        for output in cell.outputs:
-            if output.output_type == "stream" and output.name == "stderr":
-                text = output.get("text", "")
-                if isinstance(text, list):
-                    text = "".join(text)
-                if not text.strip():  # empty or whitespace only
-                    continue  # drop this output
-            new_outputs.append(output)
-        cell.outputs = new_outputs
-    return nb
 
 
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
 def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     nb = nbformat.read(nb_file, as_version=4)
-    nb = normalize_empty_stderr(nb)
 
     ignore_paths, image_checks = analyze_tags(nb)
     # Set working directory to the notebook's parent directory
