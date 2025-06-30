@@ -77,29 +77,33 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-test.txt
 
-      - run: pip cache dir
+      - name: Restore Cartopy cache
+        id: cache-cartopy
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/cartopy
+          key: cartopy-cache-v1
+          restore-keys: |
+            cartopy-cache-
 
-      - name: Pre-cache Cartopy shapefiles
+      - name: Pre-cache Cartopy shapefiles (only if not cached)
         run: |
           python -c "
           import cartopy
           import cartopy.feature as cfeature
+          from cartopy.feature import NaturalEarthFeature
           _ = list(cfeature.COASTLINE.geometries())
           _ = list(cfeature.BORDERS.geometries())
           _ = list(cfeature.LAKES.geometries())
           _ = list(cfeature.LAND.geometries())
           _ = list(cfeature.OCEAN.geometries())
           _ = list(cfeature.RIVERS.geometries())
-          _ = list(cfeature.LAND.geometries())  # Repeats LAND to ensure caching
-          _ = list(cfeature.NaturalEarthFeature('physical', 'geography_regions_polys', '50m').geometries())
+          _ = list(NaturalEarthFeature('physical', 'geography_regions_polys', '50m').geometries())
           "
+        if: steps.cache-cartopy.outputs.cache-hit != 'true'
+        
 
-      - name: Cache Cartopy shapefiles
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/cartopy
-          key: cartopy-cache-v1
-
+      
       - name: Detect changed notebooks
         id: changed
         run: |
