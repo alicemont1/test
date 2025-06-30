@@ -40,13 +40,13 @@ jobs:
           _ = cfeature.BORDERS.geometries()
           _ = cfeature.LAND.geometries()
           "
-      - name: Pre-cache Cartopy shapefiles
-        run: |
-          python -c "
-          import cartopy.feature as cfeature
-          list(cfeature.COASTLINE.geometries())
-          list(cfeature.BORDERS.geometries())
-          "
+      # - name: Pre-cache Cartopy shapefiles
+      #   run: |
+      #     python -c "
+      #     import cartopy.feature as cfeature
+      #     list(cfeature.COASTLINE.geometries())
+      #     list(cfeature.BORDERS.geometries())
+      #     "
       
       - name: Cache Cartopy shapefiles
         uses: actions/cache@v4
@@ -63,7 +63,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
