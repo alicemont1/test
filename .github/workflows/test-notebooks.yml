@@ -1,4 +1,4 @@
-Notebook Testing
+name: Notebook Testing
 
 on:
   pull_request:
