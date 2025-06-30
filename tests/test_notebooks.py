@@ -138,12 +138,12 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
 
     result = nb_regression.check(nb_file, raise_errors=False)
     # apply again after execution
-    result.nb_final = normalize_empty_stderr(result.nb_final)
-    result.nb_initial = normalize_empty_stderr(result.nb_initial)
+    nb_final_cleaned = normalize_empty_stderr(result.nb_final)
+    nb_initial_cleaned = normalize_empty_stderr(result.nb_initial)
 
-    _, image_checks_final = analyze_tags(result.nb_final)
+    _, image_checks_final = analyze_tags(nb_final_cleaned)
 
-    _, image_checks_initial = analyze_tags(result.nb_initial)
+    _, image_checks_initial = analyze_tags(nb_initial_cleaned)
 
     if result.diff_filtered:
         if image_checks:
