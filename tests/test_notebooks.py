@@ -115,21 +115,26 @@ def compare_images(result, image_checks_initial, image_checks_final):
 # @pytest.mark.parametrize("nb_file", [os.getenv("PYTEST_NB_FILE")])
 # NOTEBOOK_PATHS = os.environ.get("NOTEBOOKS", "").split()
 def normalize_empty_stderr(nb):
+    """Remove empty or whitespace-only stderr stream outputs."""
     for cell in nb.cells:
-        if "outputs" in cell:
-            for output in cell["outputs"]:
-                if (
-                    output.get("output_type") == "stream"
-                    and output.get("name") == "stderr"
-                    and output.get("text", "").strip() == ""
-                ):
-                    output["text"] = ""  # normalize all blank stderr to empty string
+        if "outputs" not in cell:
+            continue
+        new_outputs = []
+        for output in cell.outputs:
+            if (
+                output.output_type == "stream"
+                and output.name == "stderr"
+                and (not output.get("text") or output["text"].strip() == "")
+            ):
+                continue  # skip this empty stderr
+            new_outputs.append(output)
+        cell.outputs = new_outputs
     return nb
-
 
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
 def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     nb = nbformat.read(nb_file, as_version=4)
+    nb = normalize_empty_stderr(nb)
 
     ignore_paths, image_checks = analyze_tags(nb)
     # Set working directory to the notebook's parent directory
@@ -137,13 +142,10 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     nb_regression.diff_ignore = BASE_IGNORES + tuple(ignore_paths)
 
     result = nb_regression.check(nb_file, raise_errors=False)
-    # apply again after execution
-    nb_final_cleaned = normalize_empty_stderr(result.nb_final)
-    nb_initial_cleaned = normalize_empty_stderr(result.nb_initial)
 
-    _, image_checks_final = analyze_tags(nb_final_cleaned)
+    _, image_checks_final = analyze_tags(result.nb_final)
 
-    _, image_checks_initial = analyze_tags(nb_initial_cleaned)
+    _, image_checks_initial = analyze_tags(result.nb_initial)
 
     if result.diff_filtered:
         if image_checks:
