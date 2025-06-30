@@ -13,9 +13,9 @@ from pytest_notebook.diffing import filter_diff, diff_to_string
 
 NOTEBOOK_PATHS = [
     # "climate-dt/hell.ipynb"
-    'climate-dt/climate-dt-earthkit-aoi-example.ipynb', #
-    'climate-dt/climate-dt-earthkit-area-example.ipynb',
-    # # 'climate-dt/climate-dt-earthkit-example-domain.ipynb',
+    # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb', #
+    # 'climate-dt/climate-dt-earthkit-area-example.ipynb',
+    'climate-dt/climate-dt-earthkit-example-domain.ipynb',
     # # 'climate-dt/climate-dt-earthkit-example.ipynb',
     # # 'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb',
     # # 'climate-dt/climate-dt-earthkit-fe-polygon.ipynb',
