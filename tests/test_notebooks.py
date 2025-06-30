@@ -46,7 +46,8 @@ NOTEBOOK_PATHS = [
 BASE_IGNORES = (
     '/metadata/language_info/',
     '/cells/*/execution_count',
-    '/cells/*/outputs/*/execution_count'
+    '/cells/*/outputs/*/execution_count',
+    '/cells/*/outputs/*/name[stderr]',
 )
 
 # Map tags to ignore paths
