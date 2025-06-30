@@ -114,10 +114,19 @@ def compare_images(result, image_checks_initial, image_checks_final):
 
 # @pytest.mark.parametrize("nb_file", [os.getenv("PYTEST_NB_FILE")])
 # NOTEBOOK_PATHS = os.environ.get("NOTEBOOKS", "").split()
+def strip_empty_stderr(nb):
+    for cell in nb.cells:
+        if "outputs" in cell:
+            cell["outputs"] = [
+                o for o in cell["outputs"]
+                if not (o.get("output_type") == "stream" and o.get("name") == "stderr" and not o.get("text", "").strip())
+            ]
+    return nb
 
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
 def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     nb = nbformat.read(nb_file, as_version=4)
+    nb = strip_empty_stderr(nb)
 
     ignore_paths, image_checks = analyze_tags(nb)
     # Set working directory to the notebook's parent directory
