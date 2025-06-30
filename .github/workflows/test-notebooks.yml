@@ -89,6 +89,7 @@ jobs:
           _ = list(cfeature.RIVERS.geometries())
           _ = list(cfeature.LAND.geometries())  # Repeats LAND to ensure caching
           _ = list(cfeature.NaturalEarthFeature('physical', 'geography_regions_polys', '50m').geometries())
+          _ = list(cfeature.NaturalEarthFeature(category='physical', name='coastline')
           "
       # - name: Pre-cache Cartopy shapefiles
       #   run: |
