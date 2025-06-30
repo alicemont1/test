@@ -47,13 +47,11 @@ BASE_IGNORES = (
     '/metadata/language_info/',
     '/cells/*/execution_count',
     '/cells/*/outputs/*/execution_count',
-    '/cells/*/outputs/*/name[stderr]',
-    '/cells/*/outputs/*/text'
 )
 
 # Map tags to ignore paths
 TAG_IGNORES = {
-    "skip-text-html": "/cells/{idx}/outputs/*/data/text/html",
+    "skip-text-html": "/cells/{idx}/outputs/1/data/text/html",
     "skip-text-plain": "/cells/{idx}/outputs/*/data/text/plain",
     "skip-outputs": "/cells/{idx}/outputs",
     "skip-image": "/cells/{idx}/outputs/*/data/image/png",
