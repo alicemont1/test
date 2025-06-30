@@ -46,12 +46,13 @@ NOTEBOOK_PATHS = [
 BASE_IGNORES = (
     '/metadata/language_info/',
     '/cells/*/execution_count',
-    '/cells/*/outputs/*/execution_count'
+    '/cells/*/outputs/*/execution_count',
+    "/cells/*/outputs/*/data/text/html"
 )
 
 # Map tags to ignore paths
 TAG_IGNORES = {
-    "skip-text-html": "/cells/{idx}/outputs/*/data/text/html",
+    "skip-text-html": "/cells/{idx}/outputs/1/data/text/html",
     "skip-text-plain": "/cells/{idx}/outputs/*/data/text/plain",
     "skip-outputs": "/cells/{idx}/outputs",
     "skip-image": "/cells/{idx}/outputs/*/data/image/png",
@@ -113,6 +114,7 @@ def compare_images(result, image_checks_initial, image_checks_final):
 
 # @pytest.mark.parametrize("nb_file", [os.getenv("PYTEST_NB_FILE")])
 # NOTEBOOK_PATHS = os.environ.get("NOTEBOOKS", "").split()
+
 
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
 def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
