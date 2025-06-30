@@ -47,7 +47,7 @@ BASE_IGNORES = (
     '/metadata/language_info/',
     '/cells/*/execution_count',
     '/cells/*/outputs/*/execution_count',
-    "/cells/10/outputs/1/data/text/html"
+    "/cells/10/outputs/0/data/text/html"
 )
 
 # Map tags to ignore paths
