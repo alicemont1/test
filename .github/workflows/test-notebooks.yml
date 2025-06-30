@@ -1,4 +1,4 @@
-name: Notebook Testing
+name: Python Notebook Testing
 
 on:
   pull_request:
@@ -86,12 +86,7 @@ jobs:
           import cartopy.feature as cfeature
           _ = list(cfeature.COASTLINE.geometries())
           _ = list(cfeature.BORDERS.geometries())
-          _ = list(cfeature.LAKES.geometries())
           _ = list(cfeature.LAND.geometries())
-          _ = list(cfeature.OCEAN.geometries())
-          _ = list(cfeature.RIVERS.geometries())
-          _ = list(cfeature.LAND.geometries())  # Repeats LAND to ensure caching
-          _ = list(cfeature.NaturalEarthFeature('physical', 'geography_regions_polys', '50m').geometries())
           "
 
       - name: Cache Cartopy shapefiles
