@@ -96,6 +96,8 @@ jobs:
           _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces', '50m').geometries())
           _ = list(cfeature.NaturalEarthFeature('cultural', 'populated_places', '50m').geometries())
           _ = list(cfeature.NaturalEarthFeature('cultural', 'urban_areas', '50m').geometries())
+          _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '110m').geometries())
+          _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '110m').geometries())
           "
       # - name: Pre-cache Cartopy shapefiles
       #   run: |
