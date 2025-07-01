@@ -90,6 +90,12 @@ jobs:
           _ = list(cfeature.LAND.geometries())  # Repeats LAND to ensure caching
           _ = list(cfeature.NaturalEarthFeature('physical', 'geography_regions_polys', '50m').geometries())
           _ = list(cfeature.NaturalEarthFeature('physical', 'coastline', '50m').geometries())
+          _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '50m').geometries())
+          _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m').geometries())
+          _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lines', '50m').geometries())
+          _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces', '50m').geometries())
+          _ = list(cfeature.NaturalEarthFeature('cultural', 'populated_places', '50m').geometries())
+          _ = list(cfeature.NaturalEarthFeature('cultural', 'urban_areas', '50m').geometries())
           "
       # - name: Pre-cache Cartopy shapefiles
       #   run: |
