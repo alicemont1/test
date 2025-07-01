@@ -135,7 +135,7 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
         if image_checks:
             filtered_diff = compare_images(result, image_checks_initial, image_checks_final)
             if filtered_diff:
-                diff_str = diff_to_string(result.nb_final, filtered_diff, use_git=False, use_diff=True, use_color=False)
+                # diff_to_string(result.nb_final, filtered_diff, use_git=False, use_diff=True, use_color=False)
                 # import pdb;pdb.set_trace()
                 pytest.fail(result.diff_string)
         else:
