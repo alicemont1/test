@@ -132,5 +132,7 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
             if filtered_diff:
                 final = diff_to_string(result.nb_final, filtered_diff, use_git=True, use_diff=True, use_color=True)
                 pytest.fail(final)
+            else:
+                pass
         else:
             pytest.fail(result.diff_string)
