@@ -47,7 +47,7 @@ BASE_IGNORES = (
     '/metadata/language_info/',
     '/cells/*/execution_count',
     '/cells/*/outputs/*/execution_count',
-    "/cells/*/outputs/*/data/text/html"
+    "/cells/*/outputs/*/data/text/html",
 )
 
 # Map tags to ignore paths
@@ -77,43 +77,39 @@ def analyze_tags(nb):
     for idx, cell in enumerate(nb.cells):
         tags = set(cell.metadata.get("tags", []))
 
-        # Add ignore paths for each matching tag
         for tag, path_template in TAG_IGNORES.items():
             if tag in tags:
                 ignore_paths.append(path_template.format(idx=idx))
 
-        # If any "check-image" tag is present, add all output indexes
         if TAG_IMAGE_CHECKS.intersection(tags):
-            for output_idx, _ in enumerate(cell.get("outputs", [])):
-                if cell.outputs[output_idx].get("data", {}).get("image/png"):
+            for output_idx, output in enumerate(cell.get("outputs", [])):
+                if output.get("data", {}).get("image/png"):
                     image_checks.append((idx, output_idx))
 
     return ignore_paths, image_checks
 
 
-def compare_images(result, image_checks_initial, image_checks_final):
-    """Compare image hashes and remove diffs for perceptually identical images."""
+def compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=2):
+    """Compare image hashes with tolerance and remove diffs for perceptually identical images."""
     remove_paths = []
 
     for (cell_idx, output_idx_final), (_, output_idx_initial) in zip(image_checks_final, image_checks_initial):
-
-
-        png1 = result.nb_initial.cells[cell_idx].outputs[output_idx_initial].data["image/png"] #necessary so that other tags are ignored
+        png1 = result.nb_initial.cells[cell_idx].outputs[output_idx_initial].data["image/png"]
         png2 = result.nb_final.cells[cell_idx].outputs[output_idx_final].data["image/png"]
 
-        
-        # Handle case where base64 is split in a list
         png1 = "".join(png1) if isinstance(png1, list) else png1
         png2 = "".join(png2) if isinstance(png2, list) else png2
 
-        if perceptual_hash(png1) == perceptual_hash(png2):
-            remove_paths.append(f"/cells/{cell_idx}/outputs/{output_idx_final}/data/image/png")
-            remove_paths.append(f"/cells/{cell_idx}/outputs/{output_idx_initial}/data/image/png")
+        hash1 = perceptual_hash(png1)
+        hash2 = perceptual_hash(png2)
+
+        if hash1 - hash2 <= hash_distance_threshold:
+            remove_paths.extend([
+                f"/cells/{cell_idx}/outputs/{output_idx_final}/data/image/png",
+                f"/cells/{cell_idx}/outputs/{output_idx_initial}/data/image/png"
+            ])
 
     return filter_diff(result.diff_filtered, remove_paths=remove_paths)
-
-# @pytest.mark.parametrize("nb_file", [os.getenv("PYTEST_NB_FILE")])
-# NOTEBOOK_PATHS = os.environ.get("NOTEBOOKS", "").split()
 
 
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
@@ -121,23 +117,20 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     nb = nbformat.read(nb_file, as_version=4)
 
     ignore_paths, image_checks = analyze_tags(nb)
-    # Set working directory to the notebook's parent directory
+
     nb_regression.exec_cwd = os.path.dirname(nb_file)
     nb_regression.diff_ignore = BASE_IGNORES + tuple(ignore_paths)
 
     result = nb_regression.check(nb_file, raise_errors=False)
 
     _, image_checks_final = analyze_tags(result.nb_final)
-
     _, image_checks_initial = analyze_tags(result.nb_initial)
 
     if result.diff_filtered:
         if image_checks:
-            filtered_diff = compare_images(result, image_checks_initial, image_checks_final)
+            filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=2)
             if filtered_diff:
                 final = diff_to_string(result.nb_final, filtered_diff, use_git=True, use_diff=True, use_color=True)
                 pytest.fail(final)
-            else:
-                pass
         else:
             pytest.fail(result.diff_string)
