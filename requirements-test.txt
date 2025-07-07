@@ -4,7 +4,6 @@ earthkit-transforms==0.3.4.1
 earthkit-regrid==0.4.0
 earthkit-plots-default-styles==0.0.1
 covjsonkit==0.1.11
-covjsonkit==0.1.11
 polytope-client==0.7.6
 earthkit-geo==0.3.0
 ipykernel==6.29.5
@@ -14,6 +13,9 @@ kaleido==0.2.1
 lxml==5.4.0
 pytest==8.4.0
 pytest-notebook==0.10.0
-nbclient==0.10.2
+nbclient==0.5.10
 Pillow==11.2.1
 ImageHash==4.3.2
+ipython_genutils==0.2.0
+pytest-html==4.1.1
+pytest-metadata==3.1.1
