@@ -13,9 +13,9 @@ from pytest_notebook.diffing import filter_diff, diff_to_string
 
 NOTEBOOK_PATHS = [
     # "climate-dt/hell.ipynb"
-    'climate-dt/climate-dt-earthkit-aoi-example.ipynb', #
+    # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb', #
     # 'climate-dt/climate-dt-earthkit-area-example.ipynb',
-    # 'climate-dt/climate-dt-earthkit-example-domain.ipynb',
+    'climate-dt/climate-dt-earthkit-example-domain.ipynb',
     # 'climate-dt/climate-dt-earthkit-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-polygon.ipynb',
@@ -135,8 +135,7 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
         if image_checks:
             filtered_diff = compare_images(result, image_checks_initial, image_checks_final)
             if filtered_diff:
-                # diff_to_string(result.nb_final, filtered_diff, use_git=False, use_diff=True, use_color=False)
-                # import pdb;pdb.set_trace()
-                pytest.fail(result.diff_string)
+                final = diff_to_string(result.nb_final, filtered_diff, use_git=False, use_diff=True, use_color=False)
+                pytest.fail(final)
         else:
             pytest.fail(result.diff_string)
