@@ -20,7 +20,7 @@ NOTEBOOK_PATHS = [
     'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb', #passed
     'climate-dt/climate-dt-earthkit-fe-polygon.ipynb', #passed
     'climate-dt/climate-dt-earthkit-fe-story-nudging.ipynb', #
-    # # 'climate-dt/climate-dt-earthkit-fe-timeseries.ipynb', #
+    'climate-dt/climate-dt-earthkit-fe-timeseries.ipynb', #
     # # 'climate-dt/climate-dt-earthkit-fe-trajectory.ipynb',
     # # 'climate-dt/climate-dt-earthkit-fe-verticalprofile.ipynb',
     # # 'climate-dt/climate-dt-earthkit-grid-example.ipynb',
