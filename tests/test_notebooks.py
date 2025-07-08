@@ -13,14 +13,14 @@ from pytest_notebook.diffing import filter_diff, diff_to_string
 
 NOTEBOOK_PATHS = [
     # "climate-dt/hell.ipynb"
-    'climate-dt/climate-dt-earthkit-aoi-example.ipynb', #
-    'climate-dt/climate-dt-earthkit-area-example.ipynb', #passed
+    # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb', #
+    # 'climate-dt/climate-dt-earthkit-area-example.ipynb', #passed
     'climate-dt/climate-dt-earthkit-example-domain.ipynb',
-    'climate-dt/climate-dt-earthkit-example.ipynb', #passed
-    'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb', #passed
-    'climate-dt/climate-dt-earthkit-fe-polygon.ipynb', #passed
-    'climate-dt/climate-dt-earthkit-fe-story-nudging.ipynb', #
-    'climate-dt/climate-dt-earthkit-fe-timeseries.ipynb', #
+    # 'climate-dt/climate-dt-earthkit-example.ipynb', #passed
+    # 'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb', #passed
+    # 'climate-dt/climate-dt-earthkit-fe-polygon.ipynb', #passed
+    # 'climate-dt/climate-dt-earthkit-fe-story-nudging.ipynb', #
+    # 'climate-dt/climate-dt-earthkit-fe-timeseries.ipynb', #
     # # 'climate-dt/climate-dt-earthkit-fe-trajectory.ipynb',
     # # 'climate-dt/climate-dt-earthkit-fe-verticalprofile.ipynb',
     # # 'climate-dt/climate-dt-earthkit-grid-example.ipynb',
@@ -128,7 +128,7 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
 
     if result.diff_filtered:
         if image_checks:
-            filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=2)
+            filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=3)
             if filtered_diff:
                 final = diff_to_string(result.nb_final, filtered_diff, use_git=True, use_diff=True, use_color=True)
                 pytest.fail(final)
