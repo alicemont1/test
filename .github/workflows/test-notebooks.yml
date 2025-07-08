@@ -58,8 +58,6 @@ jobs:
         run: pytest
 
   test-modified-notebooks:
-    if: |
-      !contains(github.event.pull_request.changed_files, 'requirements-test.txt')
     runs-on: ubuntu-latest
 
     steps:
@@ -129,20 +127,19 @@ jobs:
           EOF
                     fi
       
-      - name: Cache Cartopy shapefiles
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/cartopy
-          key: cartopy-cache-v1
+      # - name: Cache Cartopy shapefiles
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.local/share/cartopy
+      #     key: cartopy-cache-v1
 
-      - name: Detect changed notebooks
-        id: changed
-        run: |
-          notebooks=$(git diff --name-only origin/main...HEAD | grep ".ipynb" | xargs)
-          echo "NOTEBOOKS=$notebooks" >> $GITHUB_ENV
+      # - name: Detect changed notebooks
+      #   id: changed
+      #   run: |
+      #     notebooks=$(git diff --name-only origin/main...HEAD | grep ".ipynb" | xargs)
+      #     echo "NOTEBOOKS=$notebooks" >> $GITHUB_ENV
 
       - name: Run notebook tests
-        if: env.NOTEBOOKS != ''
         run: |
           pytest -s -v tests/test_notebooks.py
         
