@@ -138,6 +138,7 @@ jobs:
       #   run: |
       #     notebooks=$(git diff --name-only origin/main...HEAD | grep ".ipynb" | xargs)
       #     echo "NOTEBOOKS=$notebooks" >> $GITHUB_ENV
+      
 
       - name: Run notebook tests
         run: |
