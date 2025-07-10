@@ -104,28 +104,28 @@ jobs:
       #     list(cfeature.COASTLINE.geometries())
       #     list(cfeature.BORDERS.geometries())
       #     "
-      - name: Download Cartopy features if not cached
-        run: |
-          _repo_dir=$(python3 -c "import cartopy; print(cartopy.config['repo_data_dir'])")
-          echo "Cartopy repo_data_dir is $_repo_dir"
+      # - name: Download Cartopy features if not cached
+      #   run: |
+      #     _repo_dir=$(python3 -c "import cartopy; print(cartopy.config['repo_data_dir'])")
+      #     echo "Cartopy repo_data_dir is $_repo_dir"
           
-          # Only download if GSHHS data doesn't exist
-          if [ ! -f "$_repo_dir/gshhs/h/GSHHS_h_L1.shp" ]; then
-              echo "Downloading Cartopy features..."
-              python3 -m cartopy.feature.download -o $_repo_dir gshhs physical cultural cultural-extra
-          else
-              echo "Cartopy features already present. Skipping download."
-          fi
+      #     # Only download if GSHHS data doesn't exist
+      #     if [ ! -f "$_repo_dir/gshhs/h/GSHHS_h_L1.shp" ]; then
+      #         echo "Downloading Cartopy features..."
+      #         python3 -m cartopy.feature.download -o $_repo_dir gshhs physical cultural cultural-extra
+      #     else
+      #         echo "Cartopy features already present. Skipping download."
+      #     fi
 
-          # Ensure siteconfig.py is set
-          _cartopy_siteconfig="$_repo_dir/../siteconfig.py"
-          if [[ ! -e $_cartopy_siteconfig ]]; then
-              echo "Creating siteconfig.py"
-              cat > $_cartopy_siteconfig <<EOF
-          def update_config(config):
-              config['pre_existing_data_dir'] = '$_repo_dir'
-          EOF
-                    fi
+      #     # Ensure siteconfig.py is set
+      #     _cartopy_siteconfig="$_repo_dir/../siteconfig.py"
+      #     if [[ ! -e $_cartopy_siteconfig ]]; then
+      #         echo "Creating siteconfig.py"
+      #         cat > $_cartopy_siteconfig <<EOF
+      #     def update_config(config):
+      #         config['pre_existing_data_dir'] = '$_repo_dir'
+      #     EOF
+      #               fi
       
       # - name: Cache Cartopy shapefiles
       #   uses: actions/cache@v4
@@ -139,6 +139,42 @@ jobs:
       #     notebooks=$(git diff --name-only origin/main...HEAD | grep ".ipynb" | xargs)
       #     echo "NOTEBOOKS=$notebooks" >> $GITHUB_ENV
       
+      - name: 🔁 Restore Cartopy shapefile cache
+        uses: actions/cache@v4
+        id: cartopy-cache
+        with:
+          path: ~/.local/share/cartopy
+          key: cartopy-v1-${{ runner.os }}-${{ hashFiles('**/requirements-test.txt') }}
+          restore-keys: |
+            cartopy-v1-${{ runner.os }}-
+
+      - name: Download Cartopy features if not cached
+        run: |
+          _repo_dir=$(python3 -c "import cartopy; print(cartopy.config['repo_data_dir'])")
+          echo "Cartopy repo_data_dir is $_repo_dir"
+          
+          if [ ! -f "$_repo_dir/gshhs/h/GSHHS_h_L1.shp" ]; then
+              echo "Downloading Cartopy features..."
+              python3 -m cartopy.feature.download -o $_repo_dir gshhs physical cultural cultural-extra
+          else
+              echo "Cartopy features already present. Skipping download."
+          fi
+
+          _cartopy_siteconfig="$_repo_dir/../siteconfig.py"
+          if [[ ! -e $_cartopy_siteconfig ]]; then
+              echo "Creating siteconfig.py"
+              cat > $_cartopy_siteconfig <<EOF
+          def update_config(config):
+              config['pre_existing_data_dir'] = '$_repo_dir'
+          EOF
+                    fi
+
+                - name: 💾 Save Cartopy shapefile cache
+                  if: steps.cartopy-cache.outputs.cache-hit != 'true'
+                  uses: actions/cache/save@v4
+                  with:
+                    path: ~/.local/share/cartopy
+                    key: cartopy-v1-${{ runner.os }}-${{ hashFiles('**/requirements-test.txt') }}
 
       - name: Run notebook tests
         run: |
