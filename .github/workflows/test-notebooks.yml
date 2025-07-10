@@ -15,47 +15,6 @@ permissions:
   contents: read
 
 jobs:
-  test-all-if-reqs-changed:
-    if: |
-      contains(github.event.pull_request.changed_files, 'requirements-test.txt')
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-          cache: 'pip'
-          cache-dependency-path: 'requirements-test.txt'
-      - run: pip install -r requirements-test.txt
-    
-      - run: pip cache dir
-
-      - name: Pre-cache Cartopy shapefiles
-        run: |
-          python -c "
-          import cartopy
-          import cartopy.feature as cfeature
-          _ = cfeature.COASTLINE.geometries()
-          _ = cfeature.BORDERS.geometries()
-          _ = cfeature.LAND.geometries()
-          "
-      # - name: Pre-cache Cartopy shapefiles
-      #   run: |
-      #     python -c "
-      #     import cartopy.feature as cfeature
-      #     list(cfeature.COASTLINE.geometries())
-      #     list(cfeature.BORDERS.geometries())
-      #     "
-      
-      - name: Cache Cartopy shapefiles
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/cartopy
-          key: cartopy-cache-v1
-
-      - name: Run all tests
-        run: pytest
 
   test-modified-notebooks:
     runs-on: ubuntu-latest
@@ -73,73 +32,8 @@ jobs:
       - run: pip install -r requirements-test.txt
     
       - run: pip cache dir
-
-      # - name: Pre-cache Cartopy shapefiles
-      #   run: |
-      #     python -c "
-      #     import cartopy
-      #     import cartopy.feature as cfeature
-      #     _ = list(cfeature.COASTLINE.geometries())
-      #     _ = list(cfeature.BORDERS.geometries())
-      #     _ = list(cfeature.LAKES.geometries())
-      #     _ = list(cfeature.LAND.geometries())
-      #     _ = list(cfeature.OCEAN.geometries())
-      #     _ = list(cfeature.RIVERS.geometries())
-      #     _ = list(cfeature.LAND.geometries())  # Repeats LAND to ensure caching
-      #     _ = list(cfeature.NaturalEarthFeature('physical', 'geography_regions_polys', '50m').geometries())
-      #     _ = list(cfeature.NaturalEarthFeature('physical', 'coastline', '50m').geometries())
-      #     _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '50m').geometries())
-      #     _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m').geometries())
-      #     _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lines', '50m').geometries())
-      #     _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces', '50m').geometries())
-      #     _ = list(cfeature.NaturalEarthFeature('cultural', 'populated_places', '50m').geometries())
-      #     _ = list(cfeature.NaturalEarthFeature('cultural', 'urban_areas', '50m').geometries())
-      #     _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '110m').geometries())
-      #     _ = list(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '110m').geometries())
-      #     "
-      # - name: Pre-cache Cartopy shapefiles
-      #   run: |
-      #     python -c "
-      #     import cartopy.feature as cfeature
-      #     list(cfeature.COASTLINE.geometries())
-      #     list(cfeature.BORDERS.geometries())
-      #     "
-      # - name: Download Cartopy features if not cached
-      #   run: |
-      #     _repo_dir=$(python3 -c "import cartopy; print(cartopy.config['repo_data_dir'])")
-      #     echo "Cartopy repo_data_dir is $_repo_dir"
-          
-      #     # Only download if GSHHS data doesn't exist
-      #     if [ ! -f "$_repo_dir/gshhs/h/GSHHS_h_L1.shp" ]; then
-      #         echo "Downloading Cartopy features..."
-      #         python3 -m cartopy.feature.download -o $_repo_dir gshhs physical cultural cultural-extra
-      #     else
-      #         echo "Cartopy features already present. Skipping download."
-      #     fi
-
-      #     # Ensure siteconfig.py is set
-      #     _cartopy_siteconfig="$_repo_dir/../siteconfig.py"
-      #     if [[ ! -e $_cartopy_siteconfig ]]; then
-      #         echo "Creating siteconfig.py"
-      #         cat > $_cartopy_siteconfig <<EOF
-      #     def update_config(config):
-      #         config['pre_existing_data_dir'] = '$_repo_dir'
-      #     EOF
-      #               fi
       
-      # - name: Cache Cartopy shapefiles
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.local/share/cartopy
-      #     key: cartopy-cache-v1
-
-      # - name: Detect changed notebooks
-      #   id: changed
-      #   run: |
-      #     notebooks=$(git diff --name-only origin/main...HEAD | grep ".ipynb" | xargs)
-      #     echo "NOTEBOOKS=$notebooks" >> $GITHUB_ENV
-      
-      - name: 🔁 Restore Cartopy shapefile cache
+      - name: Restore Cartopy shapefile cache
         uses: actions/cache@v4
         id: cartopy-cache
         with:
@@ -169,7 +63,7 @@ jobs:
           EOF
                     fi
 
-                - name: 💾 Save Cartopy shapefile cache
+                - name: Save Cartopy shapefile cache
                   if: steps.cartopy-cache.outputs.cache-hit != 'true'
                   uses: actions/cache/save@v4
                   with:
