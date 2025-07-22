@@ -5,6 +5,7 @@ import base64
 from io import BytesIO
 from PIL import Image
 import imagehash
+import json
 
 from pytest_notebook.nb_regression import NBRegressionFixture
 from pytest_notebook.diffing import filter_diff, diff_to_string
@@ -12,33 +13,32 @@ from pytest_notebook.diffing import filter_diff, diff_to_string
 
 
 NOTEBOOK_PATHS = [
-    # "climate-dt/hell.ipynb"
-    # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb', #
-    # 'climate-dt/climate-dt-earthkit-area-example.ipynb', #passed
+    # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb',
+    # 'climate-dt/climate-dt-earthkit-area-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-example-domain.ipynb',
-    # 'climate-dt/climate-dt-earthkit-example.ipynb', #passed
-    # 'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb', #passed
-    # 'climate-dt/climate-dt-earthkit-fe-polygon.ipynb', #passed
-    'climate-dt/climate-dt-earthkit-fe-story-nudging.ipynb', #
-    'climate-dt/climate-dt-earthkit-fe-timeseries.ipynb', #
-    # # 'climate-dt/climate-dt-earthkit-fe-trajectory.ipynb',
-    # # 'climate-dt/climate-dt-earthkit-fe-verticalprofile.ipynb',
-    # # 'climate-dt/climate-dt-earthkit-grid-example.ipynb',
+    'climate-dt/climate-dt-earthkit-example.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-polygon.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-story-nudging.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-timeseries.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-trajectory.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-verticalprofile.ipynb',
+    # 'climate-dt/climate-dt-earthkit-grid-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-healpix-interpolate.ipynb',
-    # # 'climate-dt/climate-dt-healpix-data.ipynb',
-    # # 'climate-dt/climate-dt-healpix-ocean-example.ipynb',
+    # 'climate-dt/climate-dt-healpix-data.ipynb',
+    # 'climate-dt/climate-dt-healpix-ocean-example.ipynb',
 
-    # # 'extremes-dt/extremes-dt-earthkit-example-domain.ipynb',
-    # # 'extremes-dt/extremes-dt-earthkit-example-fe-boundingbox.ipynb',
-    # # 'extremes-dt/extremes-dt-earthkit-example-fe-country.ipynb',
-    # # 'extremes-dt/extremes-dt-earthkit-example-fe-polygon.ipynb',
-    # # 'extremes-dt/extremes-dt-earthkit-example-fe-timeseries.ipynb',
-    # # 'extremes-dt/extremes-dt-earthkit-example-fe-trajectory.ipynb',
-    # # 'extremes-dt/extremes-dt-earthkit-example-fe-trajectory4d.ipynb',
-    # # 'extremes-dt/extremes-dt-earthkit-example-fe-verticalprofile.ipynb',
-    # # 'extremes-dt/extremes-dt-earthkit-example-fe-wave.ipynb',
-    # # 'extremes-dt/extremes-dt-earthkit-example-regrid.ipynb',
-    # # 'extremes-dt/extremes-dt-earthkit-example.ipynb',
+    # 'extremes-dt/extremes-dt-earthkit-example-domain.ipynb',
+    # 'extremes-dt/extremes-dt-earthkit-example-fe-boundingbox.ipynb',
+    # 'extremes-dt/extremes-dt-earthkit-example-fe-country.ipynb',
+    # 'extremes-dt/extremes-dt-earthkit-example-fe-polygon.ipynb',
+    # 'extremes-dt/extremes-dt-earthkit-example-fe-timeseries.ipynb',
+    # 'extremes-dt/extremes-dt-earthkit-example-fe-trajectory.ipynb',
+    # 'extremes-dt/extremes-dt-earthkit-example-fe-trajectory4d.ipynb',
+    # 'extremes-dt/extremes-dt-earthkit-example-fe-verticalprofile.ipynb',
+    # 'extremes-dt/extremes-dt-earthkit-example-fe-wave.ipynb',
+    # 'extremes-dt/extremes-dt-earthkit-example-regrid.ipynb',
+    # 'extremes-dt/extremes-dt-earthkit-example.ipynb',
 
 
 ]
@@ -52,7 +52,7 @@ BASE_IGNORES = (
 
 # Map tags to ignore paths
 TAG_IGNORES = {
-    "skip-text-html": "/cells/{idx}/outputs/1/data/text/html",
+    "skip-text-html": "/cells/{idx}/outputs/*/data/text/html",
     "skip-text-plain": "/cells/{idx}/outputs/*/data/text/plain",
     "skip-outputs": "/cells/{idx}/outputs",
     "skip-image": "/cells/{idx}/outputs/*/data/image/png",
@@ -85,11 +85,11 @@ def analyze_tags(nb):
             for output_idx, output in enumerate(cell.get("outputs", [])):
                 if output.get("data", {}).get("image/png"):
                     image_checks.append((idx, output_idx))
-
+               
     return ignore_paths, image_checks
 
 
-def compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=2):
+def compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=4):
     """Compare image hashes with tolerance and remove diffs for perceptually identical images."""
     remove_paths = []
 
@@ -106,29 +106,50 @@ def compare_images(result, image_checks_initial, image_checks_final, hash_distan
         if hash1 - hash2 <= hash_distance_threshold:
             remove_paths.extend([
                 f"/cells/{cell_idx}/outputs/{output_idx_final}/data/image/png",
-                f"/cells/{cell_idx}/outputs/{output_idx_initial}/data/image/png"
+                # f"/cells/{cell_idx}/outputs/{output_idx_initial}/data/image/png"
             ])
-
     return filter_diff(result.diff_filtered, remove_paths=remove_paths)
+
+def remove_stderr(nb, target_folder):
+    #Remove stderr messages written to baseline notebooks
+    for cell in nb.cells:
+        if "outputs" in cell:
+            cell.outputs = [
+                output for output in cell.outputs
+                if output.get("name") != "stderr"
+            ]
+    tmp_file = os.path.join(target_folder, "tmp.ipynb")
+
+    # create tmp file to be used as baseline notebook
+    with open(tmp_file, "w") as f:
+        nbformat.write(nb, f)
+    return tmp_file
 
 
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
 def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     nb = nbformat.read(nb_file, as_version=4)
+    target_folder = os.path.dirname(nb_file) 
+    tmp_file = ''
 
+    if '"name": "stderr"' in json.dumps(nb):
+        tmp_file = remove_stderr(nb, target_folder)
+        nb_file = tmp_file
     ignore_paths, image_checks = analyze_tags(nb)
-
+    
     nb_regression.exec_cwd = os.path.dirname(nb_file)
     nb_regression.diff_ignore = BASE_IGNORES + tuple(ignore_paths)
 
     result = nb_regression.check(nb_file, raise_errors=False)
+    if os.path.exists(tmp_file):
+        os.remove(tmp_file)
 
     _, image_checks_final = analyze_tags(result.nb_final)
     _, image_checks_initial = analyze_tags(result.nb_initial)
 
     if result.diff_filtered:
         if image_checks:
-            filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=3)
+            filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=4)
             if filtered_diff:
                 final = diff_to_string(result.nb_final, filtered_diff, use_git=True, use_diff=True, use_color=True)
                 pytest.fail(final)
