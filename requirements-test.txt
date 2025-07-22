@@ -1,0 +1,16 @@
+earthkit==0.11.2
+covjsonkit
+polytope-client
+earthkit-geo
+ipykernel
+nbformat
+healpy
+kaleido
+lxml
+h3
+rasterio
+imagehash
+nbformat
+pillow
+pytest
+pytest-notebook
