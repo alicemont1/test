@@ -63,12 +63,12 @@ jobs:
           EOF
                     fi
 
-                - name: Save Cartopy shapefile cache
-                  if: steps.cartopy-cache.outputs.cache-hit != 'true'
-                  uses: actions/cache/save@v4
-                  with:
-                    path: ~/.local/share/cartopy
-                    key: cartopy-v1-${{ runner.os }}-${{ hashFiles('**/requirements-test.txt') }}
+      - name: Save Cartopy shapefile cache
+        if: steps.cartopy-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.local/share/cartopy
+          key: cartopy-v1-${{ runner.os }}-${{ hashFiles('**/requirements-test.txt') }}
 
       - name: Run notebook tests
         run: |
