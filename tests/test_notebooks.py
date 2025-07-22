@@ -132,9 +132,9 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     target_folder = os.path.dirname(nb_file) 
     tmp_file = ''
 
-    if '"name": "stderr"' in json.dumps(nb):
-        tmp_file = remove_stderr(nb, target_folder)
-        nb_file = tmp_file
+    # if '"name": "stderr"' in json.dumps(nb):
+    #     tmp_file = remove_stderr(nb, target_folder)
+    #     nb_file = tmp_file
     ignore_paths, image_checks = analyze_tags(nb)
     
     nb_regression.exec_cwd = os.path.dirname(nb_file)
@@ -152,7 +152,7 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
             filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=4)
             if filtered_diff:
                 final = diff_to_string(result.nb_final, filtered_diff, use_git=True, use_diff=True, use_color=True)
-                pytest.fail(result.diff_string)
+                pytest.fail(final)
             else:
                 pass
         else:
