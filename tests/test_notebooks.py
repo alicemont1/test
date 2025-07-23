@@ -52,7 +52,7 @@ BASE_IGNORES = (
 
 # Map tags to ignore paths
 TAG_IGNORES = {
-    "skip-text-html": "/cells/{idx}/outputs/*/data/text/html",
+    # "skip-text-html": "/cells/{idx}/outputs/*/data/text/html",
     "skip-text-plain": "/cells/{idx}/outputs/*/data/text/plain",
     "skip-outputs": "/cells/{idx}/outputs",
     "skip-image": "/cells/{idx}/outputs/*/data/image/png",
@@ -132,17 +132,17 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     target_folder = os.path.dirname(nb_file) 
     tmp_file = ''
 
-    if '"name": "stderr"' in json.dumps(nb):
-        tmp_file = remove_stderr(nb, target_folder)
-        nb_file = tmp_file
+    # if '"name": "stderr"' in json.dumps(nb):
+    #     tmp_file = remove_stderr(nb, target_folder)
+    #     nb_file = tmp_file
     ignore_paths, image_checks = analyze_tags(nb)
     
     nb_regression.exec_cwd = os.path.dirname(nb_file)
     nb_regression.diff_ignore = BASE_IGNORES + tuple(ignore_paths)
 
     result = nb_regression.check(nb_file, raise_errors=False)
-    if os.path.exists(tmp_file):
-        os.remove(tmp_file)
+    # if os.path.exists(tmp_file):
+    #     os.remove(tmp_file)
 
     _, image_checks_final = analyze_tags(result.nb_final)
     _, image_checks_initial = analyze_tags(result.nb_initial)
@@ -157,4 +157,3 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
                 pass
         else:
             pytest.fail(result.diff_string)
-    # abc
