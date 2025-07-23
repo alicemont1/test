@@ -137,10 +137,11 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     #     nb_file = tmp_file
     ignore_paths, image_checks = analyze_tags(nb)
     
+    nb_regression.exec_notebook = False
     nb_regression.exec_cwd = os.path.dirname(nb_file)
     nb_regression.diff_ignore = BASE_IGNORES + tuple(ignore_paths)
 
-    result = nb_regression.check(nb_file, raise_errors=False)
+    result = nb_regression.check(nb_file)
     # if os.path.exists(tmp_file):
     #     os.remove(tmp_file)
 
