@@ -13,6 +13,7 @@ from pytest_notebook.diffing import filter_diff, diff_to_string
 
 
 NOTEBOOK_PATHS = [
+        # 'climate-dt/test.ipynb',
     # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-area-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-example-domain.ipynb',
@@ -137,10 +138,11 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     #     nb_file = tmp_file
     ignore_paths, image_checks = analyze_tags(nb)
     
+    nb_regression.exec_notebook = True
     nb_regression.exec_cwd = os.path.dirname(nb_file)
     nb_regression.diff_ignore = BASE_IGNORES + tuple(ignore_paths)
 
-    result = nb_regression.check(nb_file, raise_errors=False)
+    result = nb_regression.check(nb_file)
     # if os.path.exists(tmp_file):
     #     os.remove(tmp_file)
 
@@ -149,7 +151,7 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
 
     if result.diff_filtered:
         if image_checks:
-            filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=4)
+            filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=2)
             if filtered_diff:
                 final = diff_to_string(result.nb_final, filtered_diff, use_git=True, use_diff=True, use_color=True)
                 pytest.fail(final)
