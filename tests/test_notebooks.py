@@ -145,7 +145,7 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     result = nb_regression.check(nb_file)
     # if os.path.exists(tmp_file):
     #     os.remove(tmp_file)
-
+    #
     _, image_checks_final = analyze_tags(result.nb_final)
     _, image_checks_initial = analyze_tags(result.nb_initial)
 
