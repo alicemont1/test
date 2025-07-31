@@ -165,7 +165,7 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
         if image_checks:
             filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=2)
             if filtered_diff:
-                logger.info(f"Failed here Diff String: {pprint(result.nb_final)}")  
+                logger.info(f"Failed here Diff String:")  
                 final = diff_to_string(result.nb_final, filtered_diff, use_git=True, use_diff=True, use_color=True)
                 pytest.fail(final)
             else:
@@ -174,10 +174,5 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
         else:
             logger.info(f"Diff String: {result.diff_string}")  
             pytest.fail(result.diff_string)
-    else:
-        # Log success when there are no diffs
-        logger.info("No diff found. Test passed!")
 
-    # Capture logs after test execution
-    log_output = caplog.text
-    logger.info(f"Captured logs: {log_output}")
+
