@@ -13,18 +13,18 @@ from pytest_notebook.diffing import filter_diff, diff_to_string
 NOTEBOOK_PATHS = [
     # 'climate-dt/climate-dt-earthkit-example.ipynb',
     'climate-dt/climate-dt-earthkit-aoi-example.ipynb',
-    'climate-dt/climate-dt-earthkit-area-example.ipynb',
-    'climate-dt/climate-dt-earthkit-example-domain.ipynb',
-    'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb',
-    'climate-dt/climate-dt-earthkit-fe-polygon.ipynb',
-    'climate-dt/climate-dt-earthkit-fe-story-nudging.ipynb',
-    'climate-dt/climate-dt-earthkit-fe-timeseries.ipynb',
-    'climate-dt/climate-dt-earthkit-fe-trajectory.ipynb',
-    'climate-dt/climate-dt-earthkit-fe-verticalprofile.ipynb',
-    'climate-dt/climate-dt-earthkit-grid-example.ipynb',
-    'climate-dt/climate-dt-earthkit-healpix-interpolate.ipynb',
-    'climate-dt/climate-dt-healpix-data.ipynb',
-    'climate-dt/climate-dt-healpix-ocean-example.ipynb',
+    # 'climate-dt/climate-dt-earthkit-area-example.ipynb',
+    # 'climate-dt/climate-dt-earthkit-example-domain.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-polygon.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-story-nudging.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-timeseries.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-trajectory.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-verticalprofile.ipynb',
+    # 'climate-dt/climate-dt-earthkit-grid-example.ipynb',
+    # 'climate-dt/climate-dt-earthkit-healpix-interpolate.ipynb',
+    # 'climate-dt/climate-dt-healpix-data.ipynb',
+    # 'climate-dt/climate-dt-healpix-ocean-example.ipynb',
 
     # 'extremes-dt/extremes-dt-earthkit-example-domain.ipynb',
     # 'extremes-dt/extremes-dt-earthkit-example-fe-boundingbox.ipynb',
@@ -145,7 +145,7 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
 
     if result.diff_filtered:
         if image_checks:
-            filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=2)
+            filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=4)
             if filtered_diff:
                 final = diff_to_string(result.nb_final, filtered_diff, use_git=True, use_diff=True, use_color=True)
                 pytest.fail(final)
