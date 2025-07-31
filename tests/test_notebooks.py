@@ -5,19 +5,30 @@ import base64
 from io import BytesIO
 from PIL import Image
 import imagehash
-import json
+import logging
+import sys
+from pprint import pprint
 
 from pytest_notebook.nb_regression import NBRegressionFixture
 from pytest_notebook.diffing import filter_diff, diff_to_string
 
+# Set up logger (defined outside the test function)
+logger = logging.getLogger("test_logger")
+logger.setLevel(logging.DEBUG)
+
+# Create a StreamHandler that writes to sys.stdout
+handler = logging.StreamHandler(sys.stdout)  # Ensure it writes to stdout
+formatter = logging.Formatter('%(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 NOTEBOOK_PATHS = [
-        # 'climate-dt/test.ipynb',
+    'climate-dt/climate-dt-earthkit-example.ipynb',
+    # 'climate-dt/test.ipynb',
     # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-area-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-example-domain.ipynb',
-    'climate-dt/climate-dt-earthkit-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-polygon.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-story-nudging.ipynb',
@@ -40,9 +51,9 @@ NOTEBOOK_PATHS = [
     # 'extremes-dt/extremes-dt-earthkit-example-fe-wave.ipynb',
     # 'extremes-dt/extremes-dt-earthkit-example-regrid.ipynb',
     # 'extremes-dt/extremes-dt-earthkit-example.ipynb',
-
-
 ]
+
+
 # Static paths we always ignore
 BASE_IGNORES = (
     '/metadata/language_info/',
@@ -107,12 +118,12 @@ def compare_images(result, image_checks_initial, image_checks_final, hash_distan
         if hash1 - hash2 <= hash_distance_threshold:
             remove_paths.extend([
                 f"/cells/{cell_idx}/outputs/{output_idx_final}/data/image/png",
-                # f"/cells/{cell_idx}/outputs/{output_idx_initial}/data/image/png"
             ])
     return filter_diff(result.diff_filtered, remove_paths=remove_paths)
 
+
 def remove_stderr(nb, target_folder):
-    #Remove stderr messages written to baseline notebooks
+    # Remove stderr messages written to baseline notebooks
     for cell in nb.cells:
         if "outputs" in cell:
             cell.outputs = [
@@ -128,7 +139,10 @@ def remove_stderr(nb, target_folder):
 
 
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
-def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
+def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
+    # Log the start of the test
+    logger.info(f"Starting test for notebook: {nb_file}")
+    
     nb = nbformat.read(nb_file, as_version=4)
     target_folder = os.path.dirname(nb_file) 
     tmp_file = ''
@@ -142,10 +156,9 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
     nb_regression.exec_cwd = os.path.dirname(nb_file)
     nb_regression.diff_ignore = BASE_IGNORES + tuple(ignore_paths)
 
-    result = nb_regression.check(nb_file)
-    # if os.path.exists(tmp_file):
-    #     os.remove(tmp_file)
-    #
+    result = nb_regression.check(nb_file, raise_errors=False)
+
+    
     _, image_checks_final = analyze_tags(result.nb_final)
     _, image_checks_initial = analyze_tags(result.nb_initial)
 
@@ -153,9 +166,19 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
         if image_checks:
             filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=2)
             if filtered_diff:
+                logger.info(f"Diff String: {pprint(result.diff_string)}")  
                 final = diff_to_string(result.nb_final, filtered_diff, use_git=True, use_diff=True, use_color=True)
                 pytest.fail(final)
             else:
+                logger.info(f"Passed")
                 pass
         else:
+            logger.info(f"Diff String: {result.diff_string}")  
             pytest.fail(result.diff_string)
+    else:
+        # Log success when there are no diffs
+        logger.info("No diff found. Test passed!")
+
+    # Capture logs after test execution
+    log_output = caplog.text
+    logger.info(f"Captured logs: {log_output}")
