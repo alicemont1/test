@@ -166,7 +166,8 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
             filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=2)
             if filtered_diff:
                 final = diff_to_string(result.nb_final, filtered_diff, use_git=True, use_diff=True, use_color=True)
-                pytest.fail(result.diff_string)
+                import pdb;pdb.set_trace()
+                pytest.fail(final)
             else:
                 logger.info(f"Passed")
                 pass
