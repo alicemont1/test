@@ -5,22 +5,11 @@ import base64
 from io import BytesIO
 from PIL import Image
 import imagehash
-import logging
-import sys
-from pprint import pprint
 
 from pytest_notebook.nb_regression import NBRegressionFixture
 from pytest_notebook.diffing import filter_diff, diff_to_string
 
-# Set up logger (defined outside the test function)
-logger = logging.getLogger("test_logger")
-logger.setLevel(logging.DEBUG)
 
-# Create a StreamHandler that writes to sys.stdout
-handler = logging.StreamHandler(sys.stdout)  # Ensure it writes to stdout
-formatter = logging.Formatter('%(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
 
 NOTEBOOK_PATHS = [
@@ -137,12 +126,25 @@ def remove_stderr(nb, target_folder):
         nbformat.write(nb, f)
     return tmp_file
 
+def inject_silence_stderr_cell(nb):
+    """Insert a cell at the top of the notebook to suppress stderr output."""
+    patch_code = """
+    import sys
+    class DevNull:
+        def write(self, msg): pass
+        def flush(self): pass
+
+    sys.stderr = DevNull()
+    """
+    silence_cell = nbformat.v4.new_code_cell(source=patch_code)
+    nb.cells.insert(0, silence_cell)
 
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
 def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
     # Log the start of the test
     
     nb = nbformat.read(nb_file, as_version=4)
+    # inject_silence_stderr_cell(nb) 
     target_folder = os.path.dirname(nb_file) 
     tmp_file = ''
 
@@ -166,13 +168,10 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
             filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=2)
             if filtered_diff:
                 final = diff_to_string(result.nb_final, filtered_diff, use_git=True, use_diff=True, use_color=True)
-                import pdb;pdb.set_trace()
                 pytest.fail(final)
             else:
-                logger.info(f"Passed")
                 pass
         else:
-            logger.info(f"Diff String: {result.diff_string}")  
             pytest.fail(result.diff_string)
 
 
