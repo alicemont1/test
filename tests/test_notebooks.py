@@ -165,7 +165,7 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
         if image_checks:
             filtered_diff = compare_images(result, image_checks_initial, image_checks_final, hash_distance_threshold=2)
             if filtered_diff:
-                logger.info(f"Initial: {pprint(result.nb_final.cells[10].outputs[0])}")
+                logger.info(f"Initial: {pprint(result.nb_initial.cells[10].outputs[0])}")
                 logger.info(f"Final: {pprint(result.nb_final.cells[10].outputs[0])}")
                 final = diff_to_string(result.nb_final, filtered_diff, use_git=True, use_diff=True, use_color=True)
                 logger.info(f"difference: {pprint(final)}")  
