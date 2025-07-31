@@ -108,22 +108,6 @@ def compare_images(result, image_checks_initial, image_checks_final, hash_distan
     return filter_diff(result.diff_filtered, remove_paths=remove_paths)
 
 
-def remove_stderr(nb, target_folder):
-    # Remove stderr messages written to baseline notebooks
-    for cell in nb.cells:
-        if "outputs" in cell:
-            cell.outputs = [
-                output for output in cell.outputs
-                if output.get("name") != "stderr"
-            ]
-    tmp_file = os.path.join(target_folder, "tmp.ipynb")
-
-    # create tmp file to be used as baseline notebook
-    with open(tmp_file, "w") as f:
-        nbformat.write(nb, f)
-    return tmp_file
-
-
 def inject_silence_stderr_cell(nb):
     """Insert a cell at the top of the notebook to suppress stderr output."""
     patch_code = """
@@ -140,16 +124,10 @@ sys.stderr = DevNull()
 
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
 def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
-    # Log the start of the test
 
     nb = nbformat.read(nb_file, as_version=4)
     inject_silence_stderr_cell(nb)
-    target_folder = os.path.dirname(nb_file)
-    tmp_file = ''
 
-    # if '"name": "stderr"' in json.dumps(nb):
-    #     tmp_file = remove_stderr(nb, target_folder)
-    #     nb_file = tmp_file
     ignore_paths, image_checks = analyze_tags(nb)
 
     # Write modified notebook to a temporary file (stderr patched)
