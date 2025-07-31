@@ -141,7 +141,6 @@ def remove_stderr(nb, target_folder):
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
 def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
     # Log the start of the test
-    logger.info(f"Starting test for notebook: {nb_file}")
     
     nb = nbformat.read(nb_file, as_version=4)
     target_folder = os.path.dirname(nb_file) 
