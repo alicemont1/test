@@ -144,7 +144,7 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
     # Log the start of the test
     
     nb = nbformat.read(nb_file, as_version=4)
-    # inject_silence_stderr_cell(nb) 
+    inject_silence_stderr_cell(nb) 
     target_folder = os.path.dirname(nb_file) 
     tmp_file = ''
 
