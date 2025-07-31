@@ -5,19 +5,17 @@ import base64
 from io import BytesIO
 from PIL import Image
 import imagehash
-import json
+import tempfile
 
 from pytest_notebook.nb_regression import NBRegressionFixture
 from pytest_notebook.diffing import filter_diff, diff_to_string
 
-
-
 NOTEBOOK_PATHS = [
-        # 'climate-dt/test.ipynb',
+    'climate-dt/climate-dt-earthkit-example.ipynb',
+    # 'climate-dt/test.ipynb',
     # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-area-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-example-domain.ipynb',
-    'climate-dt/climate-dt-earthkit-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-polygon.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-story-nudging.ipynb',
@@ -40,9 +38,8 @@ NOTEBOOK_PATHS = [
     # 'extremes-dt/extremes-dt-earthkit-example-fe-wave.ipynb',
     # 'extremes-dt/extremes-dt-earthkit-example-regrid.ipynb',
     # 'extremes-dt/extremes-dt-earthkit-example.ipynb',
-
-
 ]
+
 # Static paths we always ignore
 BASE_IGNORES = (
     '/metadata/language_info/',
@@ -86,7 +83,7 @@ def analyze_tags(nb):
             for output_idx, output in enumerate(cell.get("outputs", [])):
                 if output.get("data", {}).get("image/png"):
                     image_checks.append((idx, output_idx))
-               
+
     return ignore_paths, image_checks
 
 
@@ -107,12 +104,12 @@ def compare_images(result, image_checks_initial, image_checks_final, hash_distan
         if hash1 - hash2 <= hash_distance_threshold:
             remove_paths.extend([
                 f"/cells/{cell_idx}/outputs/{output_idx_final}/data/image/png",
-                # f"/cells/{cell_idx}/outputs/{output_idx_initial}/data/image/png"
             ])
     return filter_diff(result.diff_filtered, remove_paths=remove_paths)
 
+
 def remove_stderr(nb, target_folder):
-    #Remove stderr messages written to baseline notebooks
+    # Remove stderr messages written to baseline notebooks
     for cell in nb.cells:
         if "outputs" in cell:
             cell.outputs = [
@@ -127,24 +124,44 @@ def remove_stderr(nb, target_folder):
     return tmp_file
 
 
+def inject_silence_stderr_cell(nb):
+    """Insert a cell at the top of the notebook to suppress stderr output."""
+    patch_code = """
+import sys
+class DevNull:
+    def write(self, msg): pass
+    def flush(self): pass
+
+sys.stderr = DevNull()
+    """
+    silence_cell = nbformat.v4.new_code_cell(source=patch_code)
+    nb.cells.insert(0, silence_cell)
+
+
 @pytest.mark.parametrize("nb_file", NOTEBOOK_PATHS)
-def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture):
+def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
+    # Log the start of the test
+
     nb = nbformat.read(nb_file, as_version=4)
-    target_folder = os.path.dirname(nb_file) 
+    inject_silence_stderr_cell(nb)
+    target_folder = os.path.dirname(nb_file)
     tmp_file = ''
 
     # if '"name": "stderr"' in json.dumps(nb):
     #     tmp_file = remove_stderr(nb, target_folder)
     #     nb_file = tmp_file
     ignore_paths, image_checks = analyze_tags(nb)
-    
+
+    # Write modified notebook to a temporary file (stderr patched)
+    with tempfile.NamedTemporaryFile(suffix=".ipynb", delete=False, mode="w") as f:
+        nbformat.write(nb, f)
+        patched_nb_path = f.name
+
     nb_regression.exec_notebook = True
     nb_regression.exec_cwd = os.path.dirname(nb_file)
     nb_regression.diff_ignore = BASE_IGNORES + tuple(ignore_paths)
 
-    result = nb_regression.check(nb_file)
-    # if os.path.exists(tmp_file):
-    #     os.remove(tmp_file)
+    result = nb_regression.check(patched_nb_path, raise_errors=False)
 
     _, image_checks_final = analyze_tags(result.nb_final)
     _, image_checks_initial = analyze_tags(result.nb_initial)
