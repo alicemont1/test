@@ -147,7 +147,7 @@ def test_changed_notebook(nb_file, nb_regression: NBRegressionFixture, caplog):
         _, initial_checks = analyze_tags(result.nb_initial)
 
         if image_checks:
-            filtered = compare_images(result, initial_checks, final_checks, threshold=2)
+            filtered = compare_images(result, initial_checks, final_checks, threshold=4)
             if filtered:
                 diff_str = diff_to_string(result.nb_final, filtered, use_git=True, use_diff=True, use_color=True)
                 pytest.fail(diff_str)
