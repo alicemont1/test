@@ -2,8 +2,7 @@ name: Python Notebook Testing
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - '**.ipynb'
       - 'requirements-test.txt'
@@ -19,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo (full history)
+      - name: Checkout repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -34,37 +33,43 @@ jobs:
       - name: Install test dependencies
         run: pip install -r requirements-test.txt
 
-      - name: Show pip cache dir (debug)
-        run: pip cache dir
-
-      - name: Get Cartopy repo_data_dir path
-        id: cartopy-path
+      - name: Get Cartopy data directory
+        id: cartopy-dir
         run: |
-          echo "PATH=$(python3 -c 'import cartopy; print(cartopy.config[\"repo_data_dir\"])')" >> $GITHUB_ENV
-          echo "path=$(python3 -c 'import cartopy; print(cartopy.config[\"repo_data_dir\"])')" >> $GITHUB_OUTPUT
+          REPO_DIR=$(python3 -c "import cartopy; print(cartopy.config['repo_data_dir'])")
+          echo "repo_data_dir=$REPO_DIR" >> $GITHUB_OUTPUT
 
-      - name: Restore Cartopy shapefile cache
+      - name: Restore Cartopy cache
         uses: actions/cache@v4
         with:
-          path: ${{ steps.cartopy-path.outputs.path }}
-          key: cartopy-v1-${{ runner.os }}-${{ hashFiles('requirements-test.txt') }}
+          path: ${{ steps.cartopy-dir.outputs.repo_data_dir }}
+          key: cartopy-v2-${{ runner.os }}-${{ hashFiles('requirements-test.txt') }}
           restore-keys: |
-            cartopy-v1-${{ runner.os }}-
+            cartopy-v2-${{ runner.os }}-
 
       - name: Download Cartopy features if not cached
         run: |
-          echo "Cartopy repo_data_dir is $PATH"
-
-          if [ ! -f "$PATH/gshhs/h/GSHHS_h_L1.shp" ]; then
-              echo "Downloading Cartopy features..."
-              python3 -m cartopy.feature.download -o "$PATH" gshhs physical cultural cultural-extra
+          REPO_DIR=${{ steps.cartopy-dir.outputs.repo_data_dir }}
+          mkdir -p "$REPO_DIR"
+          if [ ! -f "$REPO_DIR/gshhs/h/GSHHS_h_L1.shp" ]; then
+            echo "Downloading Cartopy features..."
+            python3 -m cartopy.feature.download -o "$REPO_DIR" gshhs physical cultural cultural-extra
           else
-              echo "Cartopy features already present. Skipping download."
+            echo "Cartopy features already present."
           fi
 
+      - name: List Cartopy repo_data_dir
+        run: ls -laR ${{ steps.cartopy-dir.outputs.repo_data_dir }}
+
+      - name: Save Cartopy cache
+        if: steps.cartopy-dir.outputs.repo_data_dir != ''
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.cartopy-dir.outputs.repo_data_dir }}
+          key: cartopy-v2-${{ runner.os }}-${{ hashFiles('requirements-test.txt') }}
+
       - name: Run notebook tests
-        run: |
-          pytest -s -v tests/test_notebooks.py
+        run: pytest -s -v tests/test_notebooks.py
 
       - name: Debug with tmate if test fails
         if: failure()
