@@ -5,7 +5,7 @@ earthkit-geo
 ipykernel
 nbformat
 healpy
-kaleido
+kaleido==1.0.0
 lxml
 h3
 rasterio
