@@ -37,9 +37,10 @@ jobs:
       - name: Show pip cache dir (debug)
         run: pip cache dir
 
-      - name: Determine Cartopy repo_data_dir
+      - name: Get Cartopy repo_data_dir path
         id: cartopy-path
         run: |
+          echo "PATH=$(python3 -c 'import cartopy; print(cartopy.config[\"repo_data_dir\"])')" >> $GITHUB_ENV
           echo "path=$(python3 -c 'import cartopy; print(cartopy.config[\"repo_data_dir\"])')" >> $GITHUB_OUTPUT
 
       - name: Restore Cartopy shapefile cache
@@ -52,12 +53,11 @@ jobs:
 
       - name: Download Cartopy features if not cached
         run: |
-          _repo_dir=$(python3 -c "import cartopy; print(cartopy.config['repo_data_dir'])")
-          echo "Cartopy repo_data_dir is $_repo_dir"
+          echo "Cartopy repo_data_dir is $PATH"
 
-          if [ ! -f "$_repo_dir/gshhs/h/GSHHS_h_L1.shp" ]; then
+          if [ ! -f "$PATH/gshhs/h/GSHHS_h_L1.shp" ]; then
               echo "Downloading Cartopy features..."
-              python3 -m cartopy.feature.download -o "$_repo_dir" gshhs physical cultural cultural-extra
+              python3 -m cartopy.feature.download -o "$PATH" gshhs physical cultural cultural-extra
           else
               echo "Cartopy features already present. Skipping download."
           fi
@@ -65,3 +65,7 @@ jobs:
       - name: Run notebook tests
         run: |
           pytest -s -v tests/test_notebooks.py
+
+      - name: Debug with tmate if test fails
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
