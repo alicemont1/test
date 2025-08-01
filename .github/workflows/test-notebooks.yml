@@ -34,11 +34,11 @@ jobs:
       - run: pip cache dir
       
       - name: Restore Cartopy shapefile cache
-        uses: actions/cache@v4
         id: cartopy-cache
+        uses: actions/cache@v4
         with:
-          path: ~/.local/share/cartopy
-          key: cartopy-v1-${{ runner.os }}-${{ hashFiles('**/requirements-test.txt') }}
+          path: ${{ env.HOME }}/.local/share/cartopy
+          key: cartopy-v1-${{ runner.os }}-${{ hashFiles('requirements-test.txt') }}
           restore-keys: |
             cartopy-v1-${{ runner.os }}-
 
@@ -54,21 +54,15 @@ jobs:
               echo "Cartopy features already present. Skipping download."
           fi
 
-          _cartopy_siteconfig="$_repo_dir/../siteconfig.py"
-          if [[ ! -e $_cartopy_siteconfig ]]; then
-              echo "Creating siteconfig.py"
-              cat > $_cartopy_siteconfig <<EOF
-          def update_config(config):
-              config['pre_existing_data_dir'] = '$_repo_dir'
-          EOF
-                    fi
+      - name: List Cartopy cache folder contents
+        run: ls -la ${{ env.HOME }}/.local/share/cartopy
 
       - name: Save Cartopy shapefile cache
         if: steps.cartopy-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache@v4
         with:
-          path: ~/.local/share/cartopy
-          key: cartopy-v1-${{ runner.os }}-${{ hashFiles('**/requirements-test.txt') }}
+          path: ${{ env.HOME }}/.local/share/cartopy
+          key: cartopy-v1-${{ runner.os }}-${{ hashFiles('requirements-test.txt') }}
     
 
       - name: Run notebook tests
