@@ -37,7 +37,7 @@ jobs:
         id: cartopy-cache
         uses: actions/cache@v4
         with:
-          path: ${{ env.HOME }}/.local/share/cartopy
+          path: $HOME/.local/share/cartopy
           key: cartopy-v1-${{ runner.os }}-${{ hashFiles('requirements-test.txt') }}
           restore-keys: |
             cartopy-v1-${{ runner.os }}-
@@ -55,13 +55,13 @@ jobs:
           fi
 
       - name: List Cartopy cache folder contents
-        run: ls -la ${{ env.HOME }}/.local/share/cartopy
+        run: ls -la $HOME/.local/share/cartopy
 
       - name: Save Cartopy shapefile cache
         if: steps.cartopy-cache.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
-          path: ${{ env.HOME }}/.local/share/cartopy
+          path: $HOME/.local/share/cartopy
           key: cartopy-v1-${{ runner.os }}-${{ hashFiles('requirements-test.txt') }}
     
 
