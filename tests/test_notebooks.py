@@ -14,14 +14,14 @@ from pytest_notebook.diffing import filter_diff, diff_to_string
 NOTEBOOK_PATHS = [
     # 'climate-dt/climate-dt-earthkit-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb',
-    # 'climate-dt/climate-dt-earthkit-area-example.ipynb',
+    'climate-dt/climate-dt-earthkit-area-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-example-domain.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-polygon.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-story-nudging.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-timeseries.ipynb',
     # 'climate-dt/climate-dt-earthkit-fe-trajectory.ipynb',
-    'climate-dt/climate-dt-earthkit-fe-verticalprofile.ipynb',
+    # 'climate-dt/climate-dt-earthkit-fe-verticalprofile.ipynb',
     # 'climate-dt/climate-dt-earthkit-grid-example.ipynb',
     # 'climate-dt/climate-dt-earthkit-healpix-interpolate.ipynb',
     # 'climate-dt/climate-dt-healpix-data.ipynb',
@@ -109,13 +109,14 @@ def compare_images(result, checks_initial, checks_final, threshold=4):
 def inject_silence_stderr_cell(nb):
     """Insert a code cell to suppress stderr output."""
     patch_code = """
-import sys
-class DevNull:
-    def write(self, msg): pass
-    def flush(self): pass
+    LIVE_REQUEST = False
+    import sys
+    class DevNull:
+        def write(self, msg): pass
+        def flush(self): pass
 
-sys.stderr = DevNull()
-"""
+    sys.stderr = DevNull()
+    """
     silence_cell = nbformat.v4.new_code_cell(source=patch_code)
     nb.cells.insert(0, silence_cell)
 

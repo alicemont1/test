@@ -54,8 +54,10 @@ jobs:
               echo "Cartopy features already present. Skipping download."
           fi
 
-      - name: List Cartopy cache folder contents
-        run: ls -la $HOME/.local/share/cartopy
+      - name: Ensure Cartopy cache folder exists and list contents
+        run: |
+          mkdir -p $HOME/.local/share/cartopy
+          ls -la $HOME/.local/share/cartopy
 
       - name: Save Cartopy shapefile cache
         if: steps.cartopy-cache.outputs.cache-hit != 'true'
