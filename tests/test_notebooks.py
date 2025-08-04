@@ -12,32 +12,32 @@ from pytest_notebook.nb_regression import NBRegressionFixture
 from pytest_notebook.diffing import filter_diff, diff_to_string
 
 NOTEBOOK_PATHS = [
-    # 'climate-dt/climate-dt-earthkit-example.ipynb',
-    # 'climate-dt/climate-dt-earthkit-aoi-example.ipynb',
-    # 'climate-dt/climate-dt-earthkit-area-example.ipynb',
-    # 'climate-dt/climate-dt-earthkit-example-domain.ipynb',
-    # 'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb',
-    # 'climate-dt/climate-dt-earthkit-fe-polygon.ipynb',
+    'climate-dt/climate-dt-earthkit-example.ipynb',
+    'climate-dt/climate-dt-earthkit-aoi-example.ipynb',
+    'climate-dt/climate-dt-earthkit-area-example.ipynb',
+    'climate-dt/climate-dt-earthkit-example-domain.ipynb',
+    'climate-dt/climate-dt-earthkit-fe-boundingbox.ipynb',
+    'climate-dt/climate-dt-earthkit-fe-polygon.ipynb',
     'climate-dt/climate-dt-earthkit-fe-story-nudging.ipynb', #f
     'climate-dt/climate-dt-earthkit-fe-timeseries.ipynb', #f
     'climate-dt/climate-dt-earthkit-fe-trajectory.ipynb', #f
     'climate-dt/climate-dt-earthkit-fe-verticalprofile.ipynb', #f
-    # 'climate-dt/climate-dt-earthkit-grid-example.ipynb',
-    # 'climate-dt/climate-dt-earthkit-healpix-interpolate.ipynb',
-    # 'climate-dt/climate-dt-healpix-data.ipynb',
-    # 'climate-dt/climate-dt-healpix-ocean-example.ipynb',
+    'climate-dt/climate-dt-earthkit-grid-example.ipynb',
+    'climate-dt/climate-dt-earthkit-healpix-interpolate.ipynb',
+    'climate-dt/climate-dt-healpix-data.ipynb',
+    'climate-dt/climate-dt-healpix-ocean-example.ipynb',
 
     'extremes-dt/extremes-dt-earthkit-example-domain.ipynb', #f
-    # 'extremes-dt/extremes-dt-earthkit-example-fe-boundingbox.ipynb',
-    # 'extremes-dt/extremes-dt-earthkit-example-fe-country.ipynb',
-    # 'extremes-dt/extremes-dt-earthkit-example-fe-polygon.ipynb',
+    'extremes-dt/extremes-dt-earthkit-example-fe-boundingbox.ipynb',
+    'extremes-dt/extremes-dt-earthkit-example-fe-country.ipynb',
+    'extremes-dt/extremes-dt-earthkit-example-fe-polygon.ipynb',
     'extremes-dt/extremes-dt-earthkit-example-fe-timeseries.ipynb', #f
-    # 'extremes-dt/extremes-dt-earthkit-example-fe-trajectory.ipynb',
-    # 'extremes-dt/extremes-dt-earthkit-example-fe-trajectory4d.ipynb',
+    'extremes-dt/extremes-dt-earthkit-example-fe-trajectory.ipynb',
+    'extremes-dt/extremes-dt-earthkit-example-fe-trajectory4d.ipynb',
     'extremes-dt/extremes-dt-earthkit-example-fe-verticalprofile.ipynb', #f
     'extremes-dt/extremes-dt-earthkit-example-fe-wave.ipynb', #f
     'extremes-dt/extremes-dt-earthkit-example-regrid.ipynb', #f
-    # 'extremes-dt/extremes-dt-earthkit-example.ipynb',
+    'extremes-dt/extremes-dt-earthkit-example.ipynb',
 
     'on-demand-extremes-dt/on-demand-extremes-dt-example.ipynb',
 ]
