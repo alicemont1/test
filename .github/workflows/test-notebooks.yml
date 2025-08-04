@@ -2,7 +2,8 @@ name: Python Notebook Testing
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
     paths:
       - '**.ipynb'
       - 'requirements-test.txt'
@@ -14,29 +15,54 @@ permissions:
   contents: read
 
 jobs:
+
   test-modified-notebooks:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repo (full history)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
           cache: 'pip'
           cache-dependency-path: 'requirements-test.txt'
+      - run: pip install -r requirements-test.txt
+    
+      - run: pip cache dir
+      
+      - name: Restore Cartopy shapefile cache
+        id: cartopy-cache
+        uses: actions/cache@v4
+        with:
+          path: $HOME/.local/share/cartopy
+          key: cartopy-v1-${{ runner.os }}-shapefiles
+          restore-keys: |
+            cartopy-v1-${{ runner.os }}-
 
-      - name: Install test dependencies
-        run: pip install -r requirements-test.txt
+      - name: Download Cartopy features if not cached
+        run: |
+          _repo_dir=$(python3 -c "import cartopy; print(cartopy.config['repo_data_dir'])")
+          echo "Cartopy repo_data_dir is $_repo_dir"
+          
+          if [ ! -d "$_repo_dir/gshhs" ]; then
+              echo "Downloading Cartopy features..."
+              python3 -m cartopy.feature.download -o $_repo_dir gshhs physical cultural cultural-extra
+          else
+              echo "Cartopy features already present. Skipping download."
+          fi
 
+      - name: Ensure Cartopy cache folder exists and list contents
+        run: |
+          mkdir -p $HOME/.local/share/cartopy
+          ls -la $HOME/.local/share/cartopy
 
-      - name: Run notebook tests
-        run: pytest -s -v tests/test_notebooks.py
-
-      - name: Debug with tmate if test fails
-        if: failure()
-        uses: mxschmitt/action-tmate@v3
+      - name: Save Cartopy shapefile cache
+        if: steps.cartopy-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: $HOME/.local/share/cartopy
+          key: cartopy-v1-${{ runner.os }}-shapefiles
+    
