@@ -38,33 +38,33 @@ jobs:
         uses: actions/cache@v4
         with:
           path: $HOME/.local/share/cartopy
-          key: cartopy-v1-${{ runner.os }}-shapefiles
+          key: cartopy-v1-${{ runner.os }}-${{ hashFiles('requirements-test.txt') }}
           restore-keys: |
             cartopy-v1-${{ runner.os }}-
 
-    - name: Download Cartopy features if not cached
-      run: |
-        _repo_dir=$(python3 -c "import cartopy; print(cartopy.config['repo_data_dir'])")
-        echo "Cartopy repo_data_dir is $_repo_dir"
-        
-        if [ ! -d "$_repo_dir/gshhs" ]; then
-            echo "Downloading Cartopy features..."
-            python3 -m cartopy.feature.download -o $_repo_dir gshhs physical cultural cultural-extra
-        else
-            echo "Cartopy features already present. Skipping download."
-        fi
+      - name: Download Cartopy features if not cached
+        run: |
+          _repo_dir=$(python3 -c "import cartopy; print(cartopy.config['repo_data_dir'])")
+          echo "Cartopy repo_data_dir is $_repo_dir"
+          
+          if [ ! -f "$_repo_dir/gshhs/h/GSHHS_h_L1.shp" ]; then
+              echo "Downloading Cartopy features..."
+              python3 -m cartopy.feature.download -o $_repo_dir gshhs physical cultural cultural-extra
+          else
+              echo "Cartopy features already present. Skipping download."
+          fi
 
-    - name: Ensure Cartopy cache folder exists and list contents
-      run: |
-        mkdir -p $HOME/.local/share/cartopy
-        ls -la $HOME/.local/share/cartopy
+      - name: Ensure Cartopy cache folder exists and list contents
+        run: |
+          mkdir -p $HOME/.local/share/cartopy
+          ls -la $HOME/.local/share/cartopy
 
-    - name: Save Cartopy shapefile cache
-      if: steps.cartopy-cache.outputs.cache-hit != 'true'
-      uses: actions/cache@v4
-      with:
-        path: $HOME/.local/share/cartopy
-        key: cartopy-v1-${{ runner.os }}-shapefiles
+      - name: Save Cartopy shapefile cache
+        if: steps.cartopy-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: $HOME/.local/share/cartopy
+          key: cartopy-v1-${{ runner.os }}-${{ hashFiles('requirements-test.txt') }}
     
 
       - name: Run notebook tests
