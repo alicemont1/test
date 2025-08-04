@@ -33,40 +33,6 @@ jobs:
       - name: Install test dependencies
         run: pip install -r requirements-test.txt
 
-      - name: Get Cartopy data directory
-        id: cartopy-dir
-        run: |
-          REPO_DIR=$(python3 -c "import cartopy; print(cartopy.config['repo_data_dir'])")
-          echo "repo_data_dir=$REPO_DIR" >> $GITHUB_OUTPUT
-
-      - name: Restore Cartopy cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.cartopy-dir.outputs.repo_data_dir }}
-          key: cartopy-v2-${{ runner.os }}-${{ hashFiles('requirements-test.txt') }}
-          restore-keys: |
-            cartopy-v2-${{ runner.os }}-
-
-      - name: Download Cartopy features if not cached
-        run: |
-          REPO_DIR=${{ steps.cartopy-dir.outputs.repo_data_dir }}
-          mkdir -p "$REPO_DIR"
-          if [ ! -f "$REPO_DIR/gshhs/h/GSHHS_h_L1.shp" ]; then
-            echo "Downloading Cartopy features..."
-            python3 -m cartopy.feature.download -o "$REPO_DIR" gshhs physical cultural cultural-extra
-          else
-            echo "Cartopy features already present."
-          fi
-
-      - name: List Cartopy repo_data_dir
-        run: ls -laR ${{ steps.cartopy-dir.outputs.repo_data_dir }}
-
-      - name: Save Cartopy cache
-        if: steps.cartopy-dir.outputs.repo_data_dir != ''
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.cartopy-dir.outputs.repo_data_dir }}
-          key: cartopy-v2-${{ runner.os }}-${{ hashFiles('requirements-test.txt') }}
 
       - name: Run notebook tests
         run: pytest -s -v tests/test_notebooks.py
