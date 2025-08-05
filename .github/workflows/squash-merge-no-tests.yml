@@ -32,17 +32,11 @@ jobs:
 
       - name: Create clean commit without tests/
         run: |
-          git checkout --orphan clean-merge
-          git reset
+          git checkout test
+          git checkout -b clean-merge
 
-          # Set Git identity for commit
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
+          # Remove the tests folder
+          git rm -r tests
+          git commit -m "Remove tests/ folder before merge"
 
-          # Manually add only the folders/files you want (exclude tests/)
-          # Example: add everything except the tests folder
-          find . -path './tests' -prune -o -type f -print | xargs git add
-
-          # Make the commit
-          git commit -m "Clean commit from test without tests/"
           git push -f origin clean-merge
