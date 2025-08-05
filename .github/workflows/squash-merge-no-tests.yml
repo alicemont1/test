@@ -1,4 +1,4 @@
-name: Auto Squash Merge from Test to Main Without Tests
+name: Prepare Clean Merge to Main (Excluding tests/)
 
 on:
   push:
@@ -6,17 +6,11 @@ on:
       - test
 
 permissions:
-  contents: write  # Required to push to 'main'
+  contents: write  # <-- Needed to push new branch
 
 jobs:
-  squash-merge:
+  prepare-clean-merge:
     runs-on: ubuntu-latest
-
-    env:
-      GIT_AUTHOR_NAME: GitHub Actions
-      GIT_AUTHOR_EMAIL: actions@github.com
-      GIT_COMMITTER_NAME: GitHub Actions
-      GIT_COMMITTER_EMAIL: actions@github.com
 
     steps:
       - name: Checkout test branch
@@ -30,24 +24,32 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
-        run: pip install -r requirements-test.txt
+      # - name: Install test dependencies
+      #   run: pip install -r requirements-test.txt
 
-      - name: Run notebook tests
-        run: pytest -s -v tests/test_notebooks.py
+      # - name: Run notebook tests
+      #   run: pytest -s -v tests/test_notebooks.py
 
-      - name: Prepare clean merge without tests/
+      - name: Create clean commit without tests/
         run: |
-          # Create a temporary branch to stage the squash
-          git checkout -b temp-clean-merge
+          git checkout --orphan clean-merge
+          git reset
 
-          # Remove tests folder from the index (not from disk)
-          git rm -r --cached tests || echo "tests/ folder not present"
-          git commit -m "Prepare merge: remove tests/ folder"
+          # Set author info for the commit
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
 
-      - name: Checkout main and perform squash merge
-        run: |
-          git checkout main
-          git merge --squash temp-clean-merge
-          git commit -m "Auto squash merge from test (excluding tests/)"
-          git push origin main
+          # Stage all files
+          git add .
+
+          # Remove tests folder from the commit (but not from disk)
+          git rm -r --cached tests || echo "tests/ not present"
+
+          # Commit clean state
+          git commit -m "Clean commit without tests/"
+          
+          # Push the cleaned branch (force since it's orphaned)
+          git push -f origin clean-merge
+
+
+

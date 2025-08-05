@@ -27,7 +27,7 @@ NOTEBOOK_PATHS = [
     'climate-dt/climate-dt-healpix-data.ipynb',
     'climate-dt/climate-dt-healpix-ocean-example.ipynb',
 
-    'extremes-dt/extremes-dt-earthkit-example-domain.ipynb', #f
+    'extremes-dt/extremes-dt-earthkit-example-domain.ipynb',
     'extremes-dt/extremes-dt-earthkit-example-fe-boundingbox.ipynb',
     'extremes-dt/extremes-dt-earthkit-example-fe-country.ipynb',
     'extremes-dt/extremes-dt-earthkit-example-fe-polygon.ipynb',
@@ -36,7 +36,7 @@ NOTEBOOK_PATHS = [
     'extremes-dt/extremes-dt-earthkit-example-fe-trajectory4d.ipynb',
     'extremes-dt/extremes-dt-earthkit-example-fe-verticalprofile.ipynb', #f
     'extremes-dt/extremes-dt-earthkit-example-fe-wave.ipynb', #f
-    'extremes-dt/extremes-dt-earthkit-example-regrid.ipynb', #f
+    'extremes-dt/extremes-dt-earthkit-example-regrid.ipynb',
     'extremes-dt/extremes-dt-earthkit-example.ipynb',
 
     'on-demand-extremes-dt/on-demand-extremes-dt-example.ipynb',
