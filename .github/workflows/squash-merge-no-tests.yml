@@ -30,13 +30,15 @@ jobs:
       # - name: Run notebook tests
       #   run: pytest -s -v tests/test_notebooks.py
 
-      - name: Create clean commit without tests/
+      - name: Set Git identity
         run: |
-          git checkout test
-          git checkout -b clean-merge
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
 
-          # Remove the tests folder
-          git rm -r tests
+      - name: Remove tests folder
+        run: |
+          git rm -r tests || echo "No tests folder to remove"
           git commit -m "Remove tests/ folder before merge"
 
-          git push -f origin clean-merge
+      - name: Push clean-merge branch
+        run: git push -f origin clean-merge
