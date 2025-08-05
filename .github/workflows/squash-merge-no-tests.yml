@@ -30,13 +30,15 @@ jobs:
       # - name: Run notebook tests
       #   run: pytest -s -v tests/test_notebooks.py
 
-      - name: Create cleaned commit (without tests/)
+      - name: Create clean commit without tests/
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git checkout -B clean-merge
-          git rm -r --cached tests || echo "No tests/ to remove"
-          git commit -m "Prepare clean commit without tests/" || echo "Nothing to commit"
+          git checkout --orphan clean-merge
+          git reset
+          git add .
+          git rm -r --cached tests || echo "tests/ not present"
+          git commit -m "Clean commit without tests/"
+          git push -f origin clean-merge
+
 
       - name: Push clean-merge branch
         run: git push origin clean-merge --force
