@@ -32,7 +32,6 @@ jobs:
 
       - name: Create clean commit without tests/
         run: |
-          # Create an orphan branch (no prior history)
           git checkout --orphan clean-merge
           git reset
 
@@ -40,14 +39,10 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
-          # Stage everything
-          git add .
-
-          # Remove tests folder from the commit (but keep it locally)
-          git rm -r --cached tests || echo "tests/ not present"
+          # Manually add only the folders/files you want (exclude tests/)
+          # Example: add everything except the tests folder
+          find . -path './tests' -prune -o -type f -print | xargs git add
 
           # Make the commit
           git commit -m "Clean commit from test without tests/"
-
-          # Push clean branch (will be used for PR)
           git push -f origin clean-merge
