@@ -30,13 +30,13 @@ jobs:
       # - name: Run notebook tests
       #   run: pytest -s -v tests/test_notebooks.py
 
-      - name: Create clean commit without tests/
+      - name: Create clean-merge branch and squash test into it
         run: |
-          git checkout --orphan clean-merge
-          git reset
-          git add .
+          git checkout main
+          git checkout -b clean-merge
+          git merge --squash test
           git rm -r --cached tests || echo "tests/ not present"
-          git commit -m "Clean commit without tests/"
+          git commit -m "Squashed clean merge from test (without tests/)"
           git push -f origin clean-merge
 
 
