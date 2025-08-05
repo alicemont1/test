@@ -5,6 +5,9 @@ on:
     branches:
       - test
 
+permissions:
+  contents: write  # <-- Needed to push new branch
+
 jobs:
   prepare-clean-merge:
     runs-on: ubuntu-latest
@@ -31,13 +34,9 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-
-          # Create a temporary branch from test
           git checkout -B clean-merge
-
-          # Remove tests folder from index (not disk)
           git rm -r --cached tests || echo "No tests/ to remove"
           git commit -m "Prepare clean commit without tests/" || echo "Nothing to commit"
 
-          # Push clean-merge branch (force to overwrite if exists)
-          git push origin clean-merge --force
+      - name: Push clean-merge branch
+        run: git push origin clean-merge --force
