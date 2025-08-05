@@ -30,15 +30,26 @@ jobs:
       # - name: Run notebook tests
       #   run: pytest -s -v tests/test_notebooks.py
 
-      - name: Create clean-merge branch and squash test into it
+      - name: Create clean commit without tests/
         run: |
-          git checkout main
-          git checkout -b clean-merge
-          git merge --squash test
+          git checkout --orphan clean-merge
+          git reset
+
+          # Set author info for the commit
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          # Stage all files
+          git add .
+
+          # Remove tests folder from the commit (but not from disk)
           git rm -r --cached tests || echo "tests/ not present"
-          git commit -m "Squashed clean merge from test (without tests/)"
+
+          # Commit clean state
+          git commit -m "Clean commit without tests/"
+          
+          # Push the cleaned branch (force since it's orphaned)
           git push -f origin clean-merge
 
 
-      - name: Push clean-merge branch
-        run: git push origin clean-merge --force
+
