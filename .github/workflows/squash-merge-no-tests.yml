@@ -1,4 +1,4 @@
-name: Auto Squash Merge from Test to Main Without Tests
+name: Prepare Clean Merge to Main (Excluding tests/)
 
 on:
   push:
@@ -6,15 +6,8 @@ on:
       - test
 
 jobs:
-  squash-merge:
+  prepare-clean-merge:
     runs-on: ubuntu-latest
-
-    env:
-      GIT_AUTHOR_NAME: GitHub Actions
-      GIT_AUTHOR_EMAIL: actions@github.com
-      GIT_COMMITTER_NAME: GitHub Actions
-      GIT_COMMITTER_EMAIL: actions@github.com
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout test branch
@@ -23,28 +16,28 @@ jobs:
           fetch-depth: 0
           ref: test
 
-      - name: Run tests
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install test dependencies
+        run: pip install -r requirements-test.txt
+
+      - name: Run notebook tests
+        run: pytest -s -v tests/test_notebooks.py
+
+      - name: Create cleaned commit (without tests/)
         run: |
-          pip install -r requirements-test.txt
-          pytest -s -v tests/test_notebooks.py
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
 
-      - name: Prepare clean merge using git worktree
-        run: |
-          # Add main branch as a separate worktree
-          git worktree add ../merge-main main
-          cd ../merge-main
+          # Create a temporary branch from test
+          git checkout -B clean-merge
 
-          # Remove tests/ folder from index only (not deleting it)
-          git rm -r --cached tests || echo "tests/ not present in main"
+          # Remove tests folder from index (not disk)
+          git rm -r --cached tests || echo "No tests/ to remove"
+          git commit -m "Prepare clean commit without tests/" || echo "Nothing to commit"
 
-          # Merge test branch as squash
-          git merge --squash ../${{ github.workspace }}
-
-          # Commit the squash merge
-          git commit -m "Automated squash merge from test (excluding tests/)"
-
-          # Push changes to main
-          git push origin main
-
-      - name: Cleanup worktree
-        run: git worktree remove ../merge-main --force
+          # Push clean-merge branch (force to overwrite if exists)
+          git push origin clean-merge --force
