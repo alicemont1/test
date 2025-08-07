@@ -23,6 +23,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+      
+      - name: Create clean-merge branch from test
+        run: |
+          git checkout -b clean-merge
 
       # - name: Install test dependencies
       #   run: pip install -r requirements-test.txt
@@ -30,26 +34,15 @@ jobs:
       # - name: Run notebook tests
       #   run: pytest -s -v tests/test_notebooks.py
 
-      - name: Create clean commit without tests/
+      - name: Set Git identity
         run: |
-          git checkout --orphan clean-merge
-          git reset
-
-          # Set author info for the commit
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
-          # Stage all files
-          git add .
+      - name: Remove tests folder
+        run: |
+          git rm -r tests || echo "No tests folder to remove"
+          git commit -m "Remove tests/ folder before merge"
 
-          # Remove tests folder from the commit (but not from disk)
-          git rm -r --cached tests || echo "tests/ not present"
-
-          # Commit clean state
-          git commit -m "Clean commit without tests/"
-          
-          # Push the cleaned branch (force since it's orphaned)
-          git push -f origin clean-merge
-
-
-
+      - name: Push clean-merge branch
+        run: git push -f origin clean-merge
